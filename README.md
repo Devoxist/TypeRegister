@@ -1,4 +1,6 @@
 # Type Resolver
+![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Fs01.oss.sonatype.org%2Fcontent%2Frepositories%2Freleases%2Fnl%2Fdevoxist%2FTypeRegister%2Fmaven-metadata.xml)
+[![GitHub license](https://img.shields.io/github/license/Devoxist/TypeRegister)](https://github.com/Devoxist/TypeRegister/blob/master/LICENSE)
 
 ### Getting Started
 
