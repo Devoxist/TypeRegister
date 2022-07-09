@@ -8,7 +8,7 @@ How to install this API? Currently, it is only possible to add this API with mav
 
 #### Maven
 
-Add this in your `pom.xml`.
+Add this to your `pom.xml`.
 
 ```xml
 
