@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Devoxist, Dev-Bjorn
+ * Copyright (c) 2022-2023 Devoxist, Dev-Bjorn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@ public class Main {
     public static void main(String[] args)
             throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         TypeRegister.register(ResolvableType.class, ResolvableType::new);
+        TypeRegister.register(StaticType.class, new StaticType());
+
         Example example = ConstructorResolver.initClass(Example.class);
     }
 
@@ -44,6 +46,10 @@ public class Main {
     }
 
     public static class ResolvableType {
+        // Put here your stuff
+    }
+
+    public static class StaticType {
         // Put here your stuff
     }
 }

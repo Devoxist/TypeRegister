@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Devoxist, Dev-Bjorn
+ * Copyright (c) 2022-2023 Devoxist, Dev-Bjorn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,13 @@ import java.util.function.Supplier;
  * @param provider the provider class
  * @param <T>      type of type
  * @param <P>      type of provider
+ *
+ * @author Dev-Bjorn
+ * @version 1.1
+ * @since 1.0
  */
+@Deprecated(since = "1.1",
+            forRemoval = true)
 public record TypeProvider<T, P extends T>(Class<T> type, Supplier<P> provider) {
 
 }

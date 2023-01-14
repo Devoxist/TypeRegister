@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Devoxist, Dev-Bjorn
+ * Copyright (c) 2022-2023 Devoxist, Dev-Bjorn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,11 @@
 
 package nl.devoxist.typeresolver;
 
+import nl.devoxist.typeresolver.exception.RegisterException;
+import nl.devoxist.typeresolver.providers.TypeObjectProvider;
+import nl.devoxist.typeresolver.providers.TypeProvider;
+import nl.devoxist.typeresolver.providers.TypeSupplierProvider;
+import nl.devoxist.typeresolver.supplier.SerializableSupplier;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,7 +34,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+/**
+ * {@link TypeRegister} is an object that registers the {@link TypeProvider}s.
+ *
+ * @author Dev-Bjorn
+ * @version 1.1
+ * @since 1.0
+ */
 public final class TypeRegister {
+    /**
+     * The map of the registered types with the corresponding {@link TypeProvider}.
+     *
+     * @since 1.0
+     */
     private static final Map<Class<?>, TypeProvider<?, ?>> typeProviders = new HashMap<>();
 
     /**
@@ -39,9 +56,47 @@ public final class TypeRegister {
      * @param provider  The {@link Supplier} of the provider.
      * @param <T>       type of the typeClazz
      * @param <P>       type of the provider
+     *
+     * @throws RegisterException if the type is not assignable from the provider.
+     * @since 1.0
      */
-    public static <T, P extends T> void register(Class<T> typeClazz, Supplier<P> provider) {
-        typeProviders.putIfAbsent(typeClazz, createTypeProvider(typeClazz, provider));
+    public static <T, P extends T> void register(
+            @NotNull Class<T> typeClazz,
+            @NotNull SerializableSupplier<P> provider
+    ) {
+        Class<?> type = provider.getSupplierClass();
+
+        if (!typeClazz.isAssignableFrom(type)) {
+            throw new RegisterException("The type is not assignable from the provider.");
+        }
+
+        TypeProvider<T, ?> typeProvider = new TypeSupplierProvider<>(typeClazz, provider);
+
+        typeProviders.putIfAbsent(typeClazz, typeProvider);
+    }
+
+    /**
+     * Register a type with a provider.
+     *
+     * @param typeClazz The typeClazz with a link to the provider.
+     * @param provider  The {@link Supplier} of the provider.
+     * @param <T>       type of the typeClazz
+     * @param <P>       type of the provider
+     *
+     * @throws RegisterException if the type is not assignable from the provider.
+     * @since 1.1
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, P> void register(@NotNull Class<T> typeClazz, @NotNull P provider) {
+        Class<?> type = provider.getClass();
+
+        if (!typeClazz.isAssignableFrom(type)) {
+            throw new RegisterException("The type is not assignable from the provider.");
+        }
+
+        TypeProvider<T, ?> typeProvider = new TypeObjectProvider<>(typeClazz, (T) provider);
+
+        typeProviders.putIfAbsent(typeClazz, typeProvider);
     }
 
     /**
@@ -51,6 +106,8 @@ public final class TypeRegister {
      * @param <T>       type of the typeClazz.
      *
      * @return If {@code true} the typeClazz is already registered.
+     *
+     * @since 1.0
      */
     @Contract(pure = true)
     public static <T> boolean hasProvider(Class<T> typeClazz) {
@@ -62,41 +119,75 @@ public final class TypeRegister {
      *
      * @param typeClazz The type to get the provider from.
      * @param <T>       type of the typeClazz
+     * @param <P>       type of the provider.
      *
      * @return {@link Supplier} of the provider.
+     *
+     * @since 1.0
+     * @deprecated Use {@link #getProviderByType(Class)}
      */
     @SuppressWarnings("unchecked")
-    public static <T> @NotNull Supplier<T> getProvider(Class<T> typeClazz) {
-        return (Supplier<T>) typeProviders.get(typeClazz).provider();
+    @Deprecated(since = "1.1",
+                forRemoval = true)
+    public static <T, P> @NotNull Supplier<P> getProvider(Class<T> typeClazz) {
+        TypeProvider<?, ?> typeProvider = findTypeProvider(typeClazz);
+
+        if (!(typeProvider instanceof TypeSupplierProvider<?, ?> typeSupplierProvider)) {
+            throw new RegisterException("The provider of '%s' is not a supplier.".formatted(typeClazz.getName()));
+        }
+
+        return (Supplier<P>) typeSupplierProvider.getProvider();
+    }
+
+    /**
+     * Get the provider.
+     *
+     * @param typeClazz The type to get the provider from.
+     * @param <T>       type of the typeClazz
+     * @param <P>       type of the provider
+     *
+     * @return {@link Supplier} of the provider.
+     *
+     * @since 1.0
+     */
+    @SuppressWarnings("unchecked")
+    public static <T, P> @NotNull P getProviderByType(Class<T> typeClazz) {
+        TypeProvider<T, ?> typeProvider = findTypeProvider(typeClazz);
+        return (P) typeProvider.getProvider();
     }
 
     /**
      * Get the initialized provider.
      *
-     * @param typeClazz The type to get the provider from.
+     * @param typeClazz The type of the {@link TypeProvider}.
      * @param <T>       type of the typeClazz
      *
      * @return The initialized provider
+     *
+     * @since 1.0
      */
     public static <T> @NotNull T getInitProvider(Class<T> typeClazz) {
-        return getProvider(typeClazz).get();
+        TypeProvider<T, ?> typeProvider = findTypeProvider(typeClazz);
+        return typeProvider.getInitProvider();
     }
 
     /**
-     * Create a type provider.
+     * Get the {@link TypeProvider} of the type.
      *
-     * @param typeClazz The type of the provider class.
-     * @param provider  Provider supplier of the type.
-     * @param <T>       type of the typeClazz
-     * @param <P>       type of the provider
+     * @param typeClazz The type of the provider
+     * @param <T>       type of the type.
      *
-     * @return The TypeProvider Class.
+     * @return The {@link TypeProvider} of the type.
+     *
+     * @since 1.1
      */
-    @Contract("_, _ -> new")
-    private static <T, P extends T> @NotNull TypeProvider<T, P> createTypeProvider(
-            Class<T> typeClazz,
-            Supplier<P> provider
-    ) {
-        return new TypeProvider<>(typeClazz, provider);
+    @NotNull
+    @SuppressWarnings("unchecked")
+    private static <T> TypeProvider<T, ?> findTypeProvider(Class<T> typeClazz) {
+        TypeProvider<?, ?> typeProvider = typeProviders.get(typeClazz);
+        if (typeProvider == null) {
+            throw new RegisterException("The provider of '%s' is not registerd.".formatted(typeClazz.getName()));
+        }
+        return (TypeProvider<T, ?>) typeProvider;
     }
 }

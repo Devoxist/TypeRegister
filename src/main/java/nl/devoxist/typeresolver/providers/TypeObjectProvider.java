@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Devoxist, Dev-Bjorn
+ * Copyright (c) 2023 Devoxist, Dev-Bjorn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,34 +20,40 @@
  * SOFTWARE.
  */
 
-import nl.devoxist.typeresolver.TypeRegister;
-import nl.devoxist.typeresolver.constructor.ConstructorResolver;
-import nl.devoxist.typeresolver.constructor.ConstructorResolving;
-import org.jetbrains.annotations.Contract;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+package nl.devoxist.typeresolver.providers;
 
-import java.lang.reflect.InvocationTargetException;
+import java.util.function.Supplier;
 
-public class ConstructorResolverTests {
+/**
+ * {@link TypeSupplierProvider} is a subclass of {@link TypeProvider} and it links a type with an {@link Object}.
+ *
+ * @param <T> The type of the type.
+ * @param <P> The type of the {@link Supplier} provider.
+ *
+ * @author Dev-Bjorn
+ * @version 1.1
+ * @since 1.1
+ */
+public class TypeObjectProvider<T, P extends T> extends TypeProvider<T, P> {
 
-    @Test
-    public void checkIfConstructionIsInitialized()
-            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        TypeRegister.register(TestClass.class, TestClass::new);
-
-        Assertions.assertNotNull(ConstructorResolver.initClass(ConstructionClass.class).testClass());
+    /**
+     * Construct a type provider object. This object holds the static object and the type.
+     *
+     * @param type     type of the provider
+     * @param provider The provider of the type.
+     */
+    public TypeObjectProvider(Class<T> type, P provider) {
+        super(type, provider);
     }
 
-    public static class TestClass {
-
+    /**
+     * Get the initiated object of the provider. For example a {@link Supplier} returns the {@link Supplier#get()}.
+     *
+     * @return The initiated object of the provider.
+     */
+    @Override
+    public T getInitProvider() {
+        return getProvider();
     }
 
-    public record ConstructionClass(TestClass testClass) {
-        @Contract(pure = true)
-        @ConstructorResolving
-        public ConstructionClass {
-        }
-
-    }
 }

@@ -26,7 +26,7 @@ application.
 
 #### Registration
 
-How to register a type. This is mainly used to a type that can only be initialized once. For example the
+How to register a type? This is mainly used to a type that can only be initialized once. For example the
 class `ResolvableType`. The primitive types are not preferred to be registered. These types can change in different
 classes. Therefor it is preferred of types which is everywhere the same.
 
@@ -37,7 +37,23 @@ public class ResolvableType {
 ```
 
 ```java 
-TypeRegister.register(ResolvableType.class, ResolvableType::new);
+TypeRegister.register(ResolvableType.class,ResolvableType::new);
+```
+
+##### Static Types
+
+How to register a static type? Instead of using a Supplier, use a static object. For example
+the class `StaticType`. The same preferences still apply to this type of registered. So,
+try to avoid using primitive types.
+
+```java
+public class StaticType {
+    // Put here your stuff
+}
+```
+
+```java 
+TypeRegister.register(StaticType.class,new StaticType());
 ```
 
 #### Auto construct classes
@@ -51,7 +67,7 @@ import ConstructorResolving;
 public class Example {
 
     @ConstructorResolving
-    public Example(ResolvableType type) {
+    public Example(ResolvableType type, StaticType type) {
         // Put here your stuff
     }
 }
@@ -63,16 +79,23 @@ public class ResolvableType {
 }
 ```
 
+```java
+public class StaticType {
+    // Put here your stuff
+}
+```
+
 First u need to add the class ResolvableType to the type register. This can be done by the code below.
 
 ```java 
-TypeRegister.register(ResolvableType.class, ResolvableType::new);
+TypeRegister.register(ResolvableType.class,ResolvableType::new);
+        TypeRegister.register(StaticType.class,new StaticType());
 ```
 
 After the type have been registered, it is possible to resolve the constructor.
 
 ```java 
-Example example = ConstructorResolver.initClass(Example.class);
+Example example=ConstructorResolver.initClass(Example.class);
 ```
 
 ##### Full Example
@@ -87,19 +110,25 @@ public class Main {
     public static void main(String[] args)
             throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         TypeRegister.register(ResolvableType.class, ResolvableType::new);
+        TypeRegister.register(StaticType.class, new StaticType());
+
         Example example = ConstructorResolver.initClass(Example.class);
     }
 
 
-    public static class Example {
+    public class Example {
 
         @ConstructorResolving
-        public Example(ResolvableType type) {
+        public Example(ResolvableType type, StaticType staticType) {
             // Put here your stuff
         }
     }
 
-    public static class ResolvableType {
+    public class ResolvableType {
+        // Put here your stuff
+    }
+
+    public class StaticType {
         // Put here your stuff
     }
 }

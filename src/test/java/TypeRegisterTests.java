@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Devoxist, Dev-Bjorn
+ * Copyright (c) 2022-2023 Devoxist, Dev-Bjorn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,8 @@ import nl.devoxist.typeresolver.TypeRegister;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.function.Supplier;
+
 public class TypeRegisterTests {
 
     @Test
@@ -34,14 +36,61 @@ public class TypeRegisterTests {
     }
 
     @Test
-    public void checkIfGottenTypeSameType() {
+    public void checkIfGottenTypeSameType1() {
         TypeRegister.register(TestClass.class, TestClass::new);
 
         Assertions.assertEquals(TypeRegister.getProvider(TestClass.class).get().getClass(), TestClass.class);
+        Assertions.assertEquals(
+                ((Supplier<?>) TypeRegister.getProviderByType(TestClass.class)).get().getClass(),
+                TestClass.class
+        );
+    }
+
+    @Test
+    public void checkIfGottenTypeSameType2() {
+        TypeRegister.register(TestClass2.class, new TestClass2());
+
+        Assertions.assertEquals(TypeRegister.getProviderByType(TestClass2.class).getClass(), TestClass2.class);
+    }
+
+    @Test
+    public void checkIfGottenTypeSameType3() {
+        TypeRegister.register(TestClass2.class, new TestClass2());
+
+        Assertions.assertEquals(TypeRegister.getInitProvider(TestClass2.class).getClass(), TestClass2.class);
+    }
+
+    @Test
+    public void checkIfGottenTypeSameType4() {
+        TypeRegister.register(TestClass.class, TestClass::new);
+
+        Assertions.assertEquals(TypeRegister.getInitProvider(TestClass.class).getClass(), TestClass.class);
+    }
+
+    @Test
+    public void checkIfAllTest() {
+        TypeRegister.register(TestClass2.class, new TestClass2());
+        TypeRegister.register(TestClass.class, TestClass::new);
+
+        Assertions.assertTrue(TypeRegister.hasProvider(TestClass.class));
+
+        Assertions.assertEquals(TypeRegister.getProvider(TestClass.class).get().getClass(), TestClass.class);
+        Assertions.assertEquals(
+                ((Supplier<?>) TypeRegister.getProviderByType(TestClass.class)).get().getClass(),
+                TestClass.class
+        );
+
+        Assertions.assertTrue(TypeRegister.hasProvider(TestClass2.class));
+
+        Assertions.assertEquals(TypeRegister.getProviderByType(TestClass2.class).getClass(), TestClass2.class);
     }
 
 
     public static class TestClass {
+
+    }
+
+    public static class TestClass2 {
 
     }
 

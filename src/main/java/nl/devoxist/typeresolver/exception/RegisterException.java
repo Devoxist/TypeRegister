@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Devoxist, Dev-Bjorn
+ * Copyright (c) 2023 Devoxist, Dev-Bjorn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,27 +22,27 @@
 
 package nl.devoxist.typeresolver.exception;
 
-import java.io.Serial;
-
 /**
- * {@link ConstructorException} can be thrown during the construction of an object.
+ * {@link RegisterException} can be thrown during the registration of an object. These include:
+ * <ul>
+ * <li>The registration of an object that does not meet the conditions.</li>
+ * <li>The retrieval of an object that does not meet the conditions.</li>
+ * </ul>
  *
  * @author Dev-Bjorn
  * @version 1.1
- * @since 1.0
+ * @since 1.1
  */
-public class ConstructorException extends RuntimeException {
-    @Serial
-    private static final long serialVersionUID = 8998339275499949657L;
+public class RegisterException extends RuntimeException {
 
     /**
      * Constructs a new runtime exception with {@code null} as its
      * detail message.  The cause is not initialized, and may subsequently be
      * initialized by a call to {@link #initCause}.
      *
-     * @since 1.0
+     * @since 1.1
      */
-    public ConstructorException() {
+    public RegisterException() {
     }
 
     /**
@@ -50,12 +50,12 @@ public class ConstructorException extends RuntimeException {
      * The cause is not initialized, and may subsequently be initialized by a
      * call to {@link #initCause}.
      *
-     * @param message the detail message. The detail message is saved for
+     * @param message The detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      *
-     * @since 1.0
+     * @since 1.1
      */
-    public ConstructorException(String message) {
+    public RegisterException(String message) {
         super(message);
     }
 
@@ -65,16 +65,16 @@ public class ConstructorException extends RuntimeException {
      * {@code cause} is <i>not</i> automatically incorporated in
      * this runtime exception's detail message.
      *
-     * @param message the detail message (which is saved for later retrieval
+     * @param message The detail message (which is saved for later retrieval
      *                by the {@link #getMessage()} method).
-     * @param cause   the cause (which is saved for later retrieval by the
+     * @param cause   The cause (which is saved for later retrieval by the
      *                {@link #getCause()} method).  (A {@code null} value is
      *                permitted, and indicates that the cause is nonexistent or
      *                unknown.)
      *
-     * @since 1.0
+     * @since 1.1
      */
-    public ConstructorException(String message, Throwable cause) {
+    public RegisterException(String message, Throwable cause) {
         super(message, cause);
     }
 
@@ -85,14 +85,14 @@ public class ConstructorException extends RuntimeException {
      * {@code cause}).  This constructor is useful for runtime exceptions
      * that are little more than wrappers for other throwables.
      *
-     * @param cause the cause (which is saved for later retrieval by the
+     * @param cause The cause (which is saved for later retrieval by the
      *              {@link #getCause()} method).  (A {@code null} value is
      *              permitted, and indicates that the cause is nonexistent or
      *              unknown.)
      *
-     * @since 1.0
+     * @since 1.1
      */
-    public ConstructorException(Throwable cause) {
+    public RegisterException(Throwable cause) {
         super(cause);
     }
 
@@ -101,22 +101,17 @@ public class ConstructorException extends RuntimeException {
      * message, cause, suppression enabled or disabled, and writable
      * stack trace enabled or disabled.
      *
-     * @param message            the detail message.
-     * @param cause              The cause.  (A {@code null} value is permitted,
+     * @param message            The detail message.
+     * @param cause              The cause. (A {@code null} value is permitted,
      *                           and indicates that the cause is nonexistent or unknown.)
      * @param enableSuppression  Whether suppression is enabled
      *                           or disabled
      * @param writableStackTrace Whether the stack trace should
      *                           be writable
      *
-     * @since 1.0
+     * @since 1.1
      */
-    public ConstructorException(
-            String message,
-            Throwable cause,
-            boolean enableSuppression,
-            boolean writableStackTrace
-    ) {
+    public RegisterException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

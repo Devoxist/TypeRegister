@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Devoxist, Dev-Bjorn
+ * Copyright (c) 2022-2023 Devoxist, Dev-Bjorn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,27 @@ package nl.devoxist.typeresolver.constructor;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.*;
+import java.lang.reflect.Constructor;
 
 /**
- * Use this annotation on a constructor that can be resolved.
+ * This annotation marks a constructor that can be resolved.
+ *
+ * @author Dev-Bjorn
+ * @version 1.1
+ * @since 1.0
  */
 @Documented
 @Target(ElementType.CONSTRUCTOR)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ConstructorResolving {
 
+    /**
+     * Set the priority of the {@link Constructor}.
+     *
+     * @return The priority of the {@link Constructor}.
+     *
+     * @see ConstructorPriority
+     * @since 1.0
+     */
     @NotNull ConstructorPriority value() default ConstructorPriority.NORMAL;
 }
