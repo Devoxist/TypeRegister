@@ -30,28 +30,38 @@ package nl.devoxist.typeresolver.constructor;
  * {@link ConstructorResolver} process.
  *
  * @author Dev-Bjorn
- * @version 1.1
- * @since 1.0
+ * @version 1.2.0
+ * @since 1.0.0
  */
 public enum ConstructorPriority {
     /**
      * The lowest priority, this constructor is used when nothing of the higher priority's can be used.
+     *
+     * @since 1.0.0
      */
     LOWEST,
     /**
      * The low priority, this constructor is used when nothing of the higher priority's can be used.
+     *
+     * @since 1.0.0
      */
     LOW,
     /**
      * The normal priority, this constructor is used when nothing of the higher priority's can be used.
+     *
+     * @since 1.0.0
      */
     NORMAL,
     /**
      * The high priority, this constructor is used when nothing of the higher priority's can be used.
+     *
+     * @since 1.0.0
      */
     HIGH,
     /**
      * The highest priority, this constructor is used, if the parameters can be resolved.
+     *
+     * @since 1.0.0
      */
     HIGHEST
 }

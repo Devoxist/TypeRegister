@@ -34,8 +34,9 @@ import java.util.function.Supplier;
  * @param <P>      type of provider
  *
  * @author Dev-Bjorn
- * @version 1.1
- * @since 1.0
+ * @version 1.2.0
+ * @since 1.0.0
+ * @deprecated Use {@link nl.devoxist.typeresolver.providers.TypeProvider}, scheduled for removal in V1.3.0
  */
 @Deprecated(since = "1.1",
             forRemoval = true)

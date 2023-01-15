@@ -27,11 +27,12 @@ package nl.devoxist.typeresolver.exception;
  * <ul>
  * <li>The registration of an object that does not meet the conditions.</li>
  * <li>The retrieval of an object that does not meet the conditions.</li>
+ * <li>When the object is not registered.</li>
  * </ul>
  *
  * @author Dev-Bjorn
- * @version 1.1
- * @since 1.1
+ * @version 1.2.0
+ * @since 1.1.0
  */
 public class RegisterException extends RuntimeException {
 
@@ -40,7 +41,7 @@ public class RegisterException extends RuntimeException {
      * detail message.  The cause is not initialized, and may subsequently be
      * initialized by a call to {@link #initCause}.
      *
-     * @since 1.1
+     * @since 1.1.0
      */
     public RegisterException() {
     }
@@ -53,7 +54,7 @@ public class RegisterException extends RuntimeException {
      * @param message The detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      *
-     * @since 1.1
+     * @since 1.1.0
      */
     public RegisterException(String message) {
         super(message);
@@ -72,7 +73,7 @@ public class RegisterException extends RuntimeException {
      *                permitted, and indicates that the cause is nonexistent or
      *                unknown.)
      *
-     * @since 1.1
+     * @since 1.1.0
      */
     public RegisterException(String message, Throwable cause) {
         super(message, cause);
@@ -83,14 +84,14 @@ public class RegisterException extends RuntimeException {
      * detail message of {@code (cause==null ? null : cause.toString())}
      * (which typically contains the class and detail message of
      * {@code cause}).  This constructor is useful for runtime exceptions
-     * that are little more than wrappers for other throwables.
+     * that are little more than wrappers for other throwable.
      *
      * @param cause The cause (which is saved for later retrieval by the
      *              {@link #getCause()} method).  (A {@code null} value is
      *              permitted, and indicates that the cause is nonexistent or
      *              unknown.)
      *
-     * @since 1.1
+     * @since 1.1.0
      */
     public RegisterException(Throwable cause) {
         super(cause);
@@ -109,7 +110,7 @@ public class RegisterException extends RuntimeException {
      * @param writableStackTrace Whether the stack trace should
      *                           be writable
      *
-     * @since 1.1
+     * @since 1.1.0
      */
     public RegisterException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);

@@ -21,9 +21,13 @@
  */
 
 import nl.devoxist.typeresolver.TypeRegister;
+import nl.devoxist.typeresolver.providers.TypeObjectProvider;
+import nl.devoxist.typeresolver.providers.TypeProvider;
+import nl.devoxist.typeresolver.providers.TypeSupplierProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class TypeRegisterTests {
@@ -33,58 +37,228 @@ public class TypeRegisterTests {
         TypeRegister.register(TestClass.class, TestClass::new);
 
         Assertions.assertTrue(TypeRegister.hasProvider(TestClass.class));
+
+        TypeRegister.unregister(TestClass.class);
     }
+
+    @Test
+    public void checkIfTypeIsRegistered2() {
+        TypeRegister.register(TestClass.class, new TestClass());
+
+        Assertions.assertTrue(TypeRegister.hasProvider(TestClass.class));
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
+    @Test
+    public void checkIfTypeIsRegistered3() {
+        TypeRegister.register(new TypeObjectProvider<>(TestClass.class, new TestClass()));
+
+        Assertions.assertTrue(TypeRegister.hasProvider(TestClass.class));
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
+    @Test
+    public void checkIfTypeIsRegistered4() {
+        TypeRegister.register(new TypeSupplierProvider<>(TestClass.class, TestClass::new));
+
+        Assertions.assertTrue(TypeRegister.hasProvider(TestClass.class));
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
+    @Test
+    public void checkIfTypeIsRegistered5() {
+        TypeRegister.register(TestClass2.class, TestClass2::new);
+
+        Assertions.assertTrue(TypeRegister.hasProvider(TestClass2.class));
+
+        TypeRegister.unregister(TestClass2.class);
+    }
+
+    @Test
+    public void checkIfTypeIsRegistered6() {
+        CustomType<TestCls> testClassCustomType = new CustomType<>();
+        testClassCustomType.type = new TestCls(1);
+        TypeRegister.register(new CustomTypeProvider<>(TestCls.class, testClassCustomType));
+
+        Assertions.assertTrue(TypeRegister.hasProvider(TestCls.class));
+
+        TypeRegister.unregister(TestCls.class);
+    }
+
+    @Test
+    public void checkIfTypeIsNotRegistered() {
+        TypeRegister.register(TestClass.class, TestClass::new);
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass2.class));
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
+    @Test
+    public void checkIfTypeIsNotRegistered2() {
+        TypeRegister.register(TestClass.class, new TestClass());
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass2.class));
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
+    @Test
+    public void checkIfTypeIsNotRegistered3() {
+        TypeRegister.register(new TypeObjectProvider<>(TestClass.class, new TestClass()));
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass2.class));
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
+    @Test
+    public void checkIfTypeIsNotRegistered4() {
+        TypeRegister.register(new TypeSupplierProvider<>(TestClass.class, TestClass::new));
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass2.class));
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
+    @Test
+    public void checkIfTypeIsNotRegistered5() {
+        TypeRegister.register(TestClass2.class, TestClass2::new);
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
+
+        TypeRegister.unregister(TestClass2.class);
+    }
+
+    @Test
+    public void checkIfTypeIsNotRegistered6() {
+        CustomType<TestCls> testClassCustomType = new CustomType<>();
+        testClassCustomType.type = new TestCls(1);
+        TypeRegister.register(new CustomTypeProvider<>(TestCls.class, testClassCustomType));
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
+
+        TypeRegister.unregister(TestCls.class);
+    }
+
 
     @Test
     public void checkIfGottenTypeSameType1() {
         TypeRegister.register(TestClass.class, TestClass::new);
 
-        Assertions.assertEquals(TypeRegister.getProvider(TestClass.class).get().getClass(), TestClass.class);
+        Assertions.assertEquals(TestClass.class, TypeRegister.getProvider(TestClass.class).get().getClass());
         Assertions.assertEquals(
-                ((Supplier<?>) TypeRegister.getProviderByType(TestClass.class)).get().getClass(),
-                TestClass.class
+                TestClass.class,
+                ((Supplier<?>) TypeRegister.getProviderByType(TestClass.class)).get().getClass()
         );
+
+        TypeRegister.unregister(TestClass.class);
     }
 
     @Test
     public void checkIfGottenTypeSameType2() {
         TypeRegister.register(TestClass2.class, new TestClass2());
 
-        Assertions.assertEquals(TypeRegister.getProviderByType(TestClass2.class).getClass(), TestClass2.class);
+        Assertions.assertEquals(TestClass2.class, TypeRegister.getInitProvider(TestClass2.class).getClass());
+
+        TypeRegister.unregister(TestClass2.class);
     }
 
     @Test
     public void checkIfGottenTypeSameType3() {
         TypeRegister.register(TestClass2.class, new TestClass2());
 
-        Assertions.assertEquals(TypeRegister.getInitProvider(TestClass2.class).getClass(), TestClass2.class);
+        Assertions.assertEquals(TestClass2.class, TypeRegister.getInitProvider(TestClass2.class).getClass());
+
+        TypeRegister.unregister(TestClass2.class);
     }
 
     @Test
     public void checkIfGottenTypeSameType4() {
         TypeRegister.register(TestClass.class, TestClass::new);
 
-        Assertions.assertEquals(TypeRegister.getInitProvider(TestClass.class).getClass(), TestClass.class);
+        Assertions.assertEquals(TestClass.class, TypeRegister.getInitProvider(TestClass.class).getClass());
+
+        TypeRegister.unregister(TestClass.class);
     }
 
     @Test
-    public void checkIfAllTest() {
-        TypeRegister.register(TestClass2.class, new TestClass2());
-        TypeRegister.register(TestClass.class, TestClass::new);
+    public void checkIfGottenTypeSameType5() {
+        CustomType<TestCls> testClassCustomType = new CustomType<>();
+        testClassCustomType.type = new TestCls(1);
+        TypeRegister.register(new CustomTypeProvider<>(TestCls.class, testClassCustomType));
 
-        Assertions.assertTrue(TypeRegister.hasProvider(TestClass.class));
+        Assertions.assertEquals(testClassCustomType.type, TypeRegister.getInitProvider(TestCls.class));
 
-        Assertions.assertEquals(TypeRegister.getProvider(TestClass.class).get().getClass(), TestClass.class);
-        Assertions.assertEquals(
-                ((Supplier<?>) TypeRegister.getProviderByType(TestClass.class)).get().getClass(),
-                TestClass.class
-        );
-
-        Assertions.assertTrue(TypeRegister.hasProvider(TestClass2.class));
-
-        Assertions.assertEquals(TypeRegister.getProviderByType(TestClass2.class).getClass(), TestClass2.class);
+        TypeRegister.unregister(TestCls.class);
     }
 
+    @Test
+    public void checkIfUnregisterType() {
+        TypeRegister.register(TestClass.class, TestClass::new);
+        TypeRegister.unregister(TestClass.class);
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
+    }
+
+    @Test
+    public void checkIfUnregisterType2() {
+        TypeRegister.register(TestClass.class, new TestClass());
+        TypeRegister.unregister(TestClass.class);
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
+    }
+
+    @Test
+    public void checkIfUnregisterType3() {
+        TypeRegister.register(new TypeObjectProvider<>(TestClass.class, new TestClass()));
+        TypeRegister.unregister(TestClass.class);
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
+    }
+
+    @Test
+    public void checkIfUnregisterType4() {
+        TypeRegister.register(new TypeSupplierProvider<>(TestClass.class, TestClass::new));
+        TypeRegister.unregister(TestClass.class);
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
+    }
+
+    @Test
+    public void checkIfUnregisterType5() {
+        TypeRegister.register(TestClass.class, TestClass::new);
+        TypeRegister.unregister(new TypeSupplierProvider<>(TestClass.class, TestClass::new));
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
+    }
+
+    @Test
+    public void checkIfUnregisterType6() {
+        TypeRegister.register(TestClass.class, new TestClass());
+        TypeRegister.unregister(new TypeObjectProvider<>(TestClass.class, new TestClass()));
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
+    }
+
+    @Test
+    public void checkIfUnregisterType7() {
+        TypeRegister.register(new TypeObjectProvider<>(TestClass.class, new TestClass()));
+        TypeRegister.unregister(new TypeObjectProvider<>(TestClass.class, new TestClass()));
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
+    }
+
+    @Test
+    public void checkIfUnregisterType8() {
+        TypeRegister.register(new TypeSupplierProvider<>(TestClass.class, TestClass::new));
+        TypeRegister.unregister(new TypeSupplierProvider<>(TestClass.class, TestClass::new));
+
+        Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
+    }
 
     public static class TestClass {
 
@@ -92,6 +266,36 @@ public class TypeRegisterTests {
 
     public static class TestClass2 {
 
+    }
+
+    public static class TestCls {
+        public int i;
+
+        public TestCls(int i) {
+            this.i = i;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(i);
+        }
+    }
+
+    public static class CustomTypeProvider<T, P extends T> extends TypeProvider<T, CustomType<P>> {
+
+        public CustomTypeProvider(Class<T> type, CustomType<P> provider) {
+            super(type, provider);
+        }
+
+        @Override
+        public T getInitProvider() {
+            return getProvider().type;
+        }
+
+    }
+
+    public static class CustomType<P> {
+        private P type;
     }
 
 }

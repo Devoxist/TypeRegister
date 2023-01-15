@@ -1,4 +1,5 @@
 # Type Resolver
+
 [![Maven Central](https://img.shields.io/maven-central/v/nl.devoxist/TypeRegister.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22nl.devoxist%22%20AND%20a:%22TypeRegister%22)
 [![GitHub license](https://img.shields.io/github/license/Devoxist/TypeRegister)](https://github.com/Devoxist/TypeRegister/blob/master/LICENSE)
 
@@ -25,6 +26,8 @@ This API is able to auto construct classes. It is also possible to save a type a
 application.
 
 #### Registration
+
+##### Supplier Types
 
 How to register a type? This is mainly used to a type that can only be initialized once. For example the
 class `ResolvableType`. The primitive types are not preferred to be registered. These types can change in different
@@ -54,6 +57,47 @@ public class StaticType {
 
 ```java 
 TypeRegister.register(StaticType.class,new StaticType());
+```
+
+##### Unregister Types
+
+How to unregister a type? The type of the registered `TypeProvider` is parameter of
+the `TypeRegister#unregister(Class)`. The only condition of unregistering a type, that the type needs to be registered.
+
+```java 
+TypeRegister.register(StaticType.class,new StaticType());
+        TypeRegister.unregister(StaticType.class);
+```
+
+##### Custom Types
+
+How to create a custom `TypeProvider`? In the example, the `CustomTypeProvider` is extended by `TypeProvider`. This is
+how the custom types can be created.
+
+```java 
+public static class CustomTypeProvider<T, P extends T> extends TypeProvider<T, CustomType<P>> {
+
+    public CustomTypeProvider(Class<T> type, CustomType<P> provider) {
+        super(type, provider);
+    }
+
+    @Override
+    public T getInitProvider() {
+        // Put here your stuff
+    }
+
+    // Put here your stuff
+}
+
+public static class CustomType<P> {
+    // Put here your stuff
+}
+```
+
+How can this `CustomTypeProvider` be registered? Use the method `register(TypeProvider)` in `TypeRegister`.
+
+```java
+TypeRegister.register(new CustomTypeProvider(TestClass.class,new CustomType<TestClass>()));
 ```
 
 #### Auto construct classes

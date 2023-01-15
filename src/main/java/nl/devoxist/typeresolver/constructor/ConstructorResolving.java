@@ -31,8 +31,8 @@ import java.lang.reflect.Constructor;
  * This annotation marks a constructor that can be resolved.
  *
  * @author Dev-Bjorn
- * @version 1.1
- * @since 1.0
+ * @version 1.2.0
+ * @since 1.0.0
  */
 @Documented
 @Target(ElementType.CONSTRUCTOR)
@@ -45,7 +45,7 @@ public @interface ConstructorResolving {
      * @return The priority of the {@link Constructor}.
      *
      * @see ConstructorPriority
-     * @since 1.0
+     * @since 1.0.0
      */
     @NotNull ConstructorPriority value() default ConstructorPriority.NORMAL;
 }

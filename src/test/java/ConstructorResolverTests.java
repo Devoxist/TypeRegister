@@ -21,26 +21,115 @@
  */
 
 import nl.devoxist.typeresolver.TypeRegister;
+import nl.devoxist.typeresolver.constructor.ConstructorPriority;
 import nl.devoxist.typeresolver.constructor.ConstructorResolver;
 import nl.devoxist.typeresolver.constructor.ConstructorResolving;
+import nl.devoxist.typeresolver.providers.TypeProvider;
 import org.jetbrains.annotations.Contract;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 
 public class ConstructorResolverTests {
 
     @Test
     public void checkIfConstructionIsInitialized()
             throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        TypeRegister.register(TestClass.class, TestClass::new);
+        TypeRegister.register(TestClass.class, () -> new TestClass(1));
 
         Assertions.assertNotNull(ConstructorResolver.initClass(ConstructionClass.class).testClass());
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
+    @Test
+    public void checkIfConstructionIsCorrectInitialized()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        TypeRegister.register(TestClass.class, () -> new TestClass(2));
+
+        Assertions.assertEquals(
+                TypeRegister.getInitProvider(TestClass.class).hashCode(),
+                ConstructorResolver.initClass(ConstructionClass.class).testClass().hashCode()
+        );
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
+
+    @Test
+    public void checkIfConstructionIsCorrectInitialized2()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        CustomType<TestClass> testClassCustomType = new CustomType<>();
+        testClassCustomType.type = new TestClass(1);
+        TypeRegister.register(new CustomTypeProvider<>(TestClass.class, testClassCustomType));
+
+        Assertions.assertEquals(
+                testClassCustomType.type,
+                ConstructorResolver.initClass(ConstructionClass.class).testClass()
+        );
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
+    @Test
+    public void checkIfConstructionIsCorrectInitialized3()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        CustomType<TestClass> testClassCustomType = new CustomType<>();
+        testClassCustomType.type = new TestClass(1);
+        TypeRegister.register(new CustomTypeProvider<>(TestClass.class, testClassCustomType));
+        ConstructionClass provider = new ConstructionClass(testClassCustomType.type);
+        TypeRegister.register(ConstructionClass.class, provider);
+
+        TestCls testCls = ConstructorResolver.initClass(TestCls.class);
+        Assertions.assertEquals(testClassCustomType.type, testCls.testClass);
+        Assertions.assertEquals(provider, testCls.constructionClass);
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
+    @Test
+    public void checkIfConstructionIsCorrectInitialized4()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        CustomType<TestClass> testClassCustomType = new CustomType<>();
+        testClassCustomType.type = new TestClass(1);
+        TypeRegister.register(new CustomTypeProvider<>(TestClass.class, testClassCustomType));
+
+        TestCls testCls = ConstructorResolver.initClass(TestCls.class);
+        Assertions.assertEquals(testClassCustomType.type, testCls.testClass);
+        Assertions.assertNull(testCls.constructionClass);
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
+    @Test
+    public void checkIfConstructionIsCorrectInitialized5()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        CustomType<TestClass> testClassCustomType = new CustomType<>();
+        testClassCustomType.type = new TestClass(1);
+        TypeRegister.register(new CustomTypeProvider<>(TestClass.class, testClassCustomType));
+        ConstructionClass provider = new ConstructionClass(testClassCustomType.type);
+        TypeRegister.register(ConstructionClass.class, provider);
+
+        TestCls2 testCls2 = ConstructorResolver.initClass(TestCls2.class);
+        Assertions.assertEquals(testClassCustomType.type, testCls2.testClass);
+        Assertions.assertNull(testCls2.constructionClass);
+
+        TypeRegister.unregister(TestClass.class);
     }
 
     public static class TestClass {
+        public int i;
 
+        public TestClass(int i) {
+            this.i = i;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(i);
+        }
     }
 
     public record ConstructionClass(TestClass testClass) {
@@ -50,4 +139,66 @@ public class ConstructorResolverTests {
         }
 
     }
+
+    public static final class TestCls {
+        public final TestClass testClass;
+        public ConstructionClass constructionClass;
+
+        @ConstructorResolving(ConstructorPriority.LOWEST)
+        public TestCls(TestClass testClass) {
+            this.testClass = testClass;
+        }
+
+        @ConstructorResolving(ConstructorPriority.HIGHEST)
+        public TestCls(TestClass testClass, ConstructionClass constructionClass) {
+            this.testClass = testClass;
+            this.constructionClass = constructionClass;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(testClass, constructionClass);
+        }
+
+    }
+
+    public static final class TestCls2 {
+        public final TestClass testClass;
+        public ConstructionClass constructionClass;
+
+        @ConstructorResolving(ConstructorPriority.HIGHEST)
+        public TestCls2(TestClass testClass) {
+            this.testClass = testClass;
+        }
+
+        @ConstructorResolving(ConstructorPriority.LOWEST)
+        public TestCls2(TestClass testClass, ConstructionClass constructionClass) {
+            this.testClass = testClass;
+            this.constructionClass = constructionClass;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(testClass, constructionClass);
+        }
+
+    }
+
+    public static class CustomTypeProvider<T, P extends T> extends TypeProvider<T, CustomType<P>> {
+
+        public CustomTypeProvider(Class<T> type, CustomType<P> provider) {
+            super(type, provider);
+        }
+
+        @Override
+        public T getInitProvider() {
+            return getProvider().type;
+        }
+
+    }
+
+    public static class CustomType<P> {
+        private P type;
+    }
+
 }

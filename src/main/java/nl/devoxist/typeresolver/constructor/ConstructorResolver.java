@@ -51,16 +51,24 @@ import java.util.Optional;
  * }</pre>
  *
  * @author Dev-Bjorn
- * @version 1.0
- * @since 1.0
+ * @version 1.2.0
+ * @since 1.0.0
  */
 public final class ConstructorResolver {
 
+    /**
+     * Construct a new {@link ConstructorResolver} object. This always fails, because the class is a static class. So it
+     * only contains static objects. Thus, it throws an {@link IllegalAccessException}.
+     *
+     * @throws IllegalAccessException If the {@link ConstructorResolver} was try to construct the class. The
+     *                                construction of this class is not possible, because this is a static class.
+     * @since 1.0.0
+     */
     @Contract(value = " -> fail",
               pure = true)
     @ApiStatus.Internal
-    private ConstructorResolver() {
-        throw new RuntimeException("This class is an static class, so this class cannot be initialized.");
+    private ConstructorResolver() throws IllegalAccessException {
+        throw new IllegalAccessException("This class is an static class, so this class cannot be initialized.");
     }
 
     /**
@@ -78,6 +86,7 @@ public final class ConstructorResolver {
      *                                   class.
      * @throws IllegalAccessException    if this Constructor object is enforcing Java language access control and the
      *                                   underlying constructor is inaccessible.
+     * @since 1.0.0
      */
     public static <T> T initClass(@NotNull Class<T> tClass)
             throws
@@ -107,6 +116,7 @@ public final class ConstructorResolver {
      * @return {@link Optional} of a constructor. This will be empty if no valid constructor is found.
      *
      * @throws NoSuchMethodException if a matching method is not found.
+     * @since 1.0.0
      */
     private static Optional<Constructor<?>> getClassConstructor(@NotNull Class<?> tClass) throws NoSuchMethodException {
         if ((tClass.getConstructors().length == 0 && tClass.getDeclaredConstructors().length == 0) ||
@@ -123,6 +133,8 @@ public final class ConstructorResolver {
      * @param constructor constructor to resolve the types from
      *
      * @return resolved objects of the given constructor.
+     *
+     * @since 1.0.0
      */
     @Contract(pure = true)
     private static Object @NotNull [] getResolvedObjects(@NotNull Constructor<?> constructor) {
@@ -138,6 +150,8 @@ public final class ConstructorResolver {
      * @param constructors constructors that will be checked to the conditions.
      *
      * @return constructor with the highest {@link ConstructorPriority} and that has resolvable types.
+     *
+     * @since 1.0.0
      */
     private static Optional<Constructor<?>> getConstructor(@NotNull Constructor<?> @NotNull [] constructors) {
         try {
@@ -157,6 +171,8 @@ public final class ConstructorResolver {
      * @param parameters classes that will be checked.
      *
      * @return If {@code true} all classes are a resolvable type.
+     *
+     * @since 1.0.0
      */
     private static boolean hasResolvableTypes(Class<?> @NotNull [] parameters) {
         return Arrays.stream(parameters).parallel().allMatch(TypeRegister::hasProvider);
@@ -167,6 +183,8 @@ public final class ConstructorResolver {
      * {@link ConstructorResolving}.
      *
      * @return {@link Comparator} of the {@link Constructor}
+     *
+     * @since 1.0.0
      */
     private static Comparator<Constructor<?>> getConstructorComparator() {
         return Comparator.comparing(constructor -> constructor.getAnnotation(ConstructorResolving.class)
@@ -180,6 +198,8 @@ public final class ConstructorResolver {
      * @param constructors constructors to check
      *
      * @return If {@code true} there is a public constructor with no parameters.
+     *
+     * @since 1.0.0
      */
     private static boolean hasConstructorWithNoParams(@NotNull Constructor<?> @NotNull [] constructors) {
         return Arrays.stream(constructors)

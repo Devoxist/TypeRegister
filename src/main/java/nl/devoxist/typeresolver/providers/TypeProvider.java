@@ -22,6 +22,8 @@
 
 package nl.devoxist.typeresolver.providers;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -32,21 +34,21 @@ import java.util.function.Supplier;
  * @param <P> The type of the provider.
  *
  * @author Dev-Bjorn
- * @version 1.1
- * @since 1.0
+ * @version 1.2.0
+ * @since 1.0.0
  */
 public abstract class TypeProvider<T, P> {
     /**
      * The type of the provider.
      *
-     * @since 1.1
+     * @since 1.1.0
      */
     private final Class<T> type;
 
     /**
      * The provided object of the type.
      *
-     * @since 1.1
+     * @since 1.1.0
      */
     private final P provider;
 
@@ -56,9 +58,9 @@ public abstract class TypeProvider<T, P> {
      * @param type     The type of the provider
      * @param provider The provided object of the type.
      *
-     * @since 1.1
+     * @since 1.1.0
      */
-    public TypeProvider(Class<T> type, P provider) {
+    public TypeProvider(@NotNull Class<T> type, @NotNull P provider) {
         this.type = type;
         this.provider = provider;
     }
@@ -68,7 +70,7 @@ public abstract class TypeProvider<T, P> {
      *
      * @return The type of the provider.
      *
-     * @since 1.1
+     * @since 1.1.0
      */
     public Class<T> getType() {
         return type;
@@ -79,7 +81,7 @@ public abstract class TypeProvider<T, P> {
      *
      * @return The provider of the type.
      *
-     * @since 1.1
+     * @since 1.1.0
      */
     public P getProvider() {
         return provider;
@@ -90,7 +92,7 @@ public abstract class TypeProvider<T, P> {
      *
      * @return The initiated object of the provider.
      *
-     * @since 1.1
+     * @since 1.1.0
      */
     public abstract T getInitProvider();
 
@@ -149,7 +151,7 @@ public abstract class TypeProvider<T, P> {
      * that equal objects must have equal hash codes.
      * @see #hashCode()
      * @see java.util.HashMap
-     * @since 1.1
+     * @since 1.1.0
      */
     @Override
     public boolean equals(Object obj) {
@@ -195,7 +197,7 @@ public abstract class TypeProvider<T, P> {
      * by class {@code Object} returns distinct integers for distinct objects.
      * @see java.lang.Object#equals(java.lang.Object)
      * @see java.lang.System#identityHashCode
-     * @since 1.1
+     * @since 1.1.0
      */
     @Override
     public int hashCode() {
@@ -225,7 +227,7 @@ public abstract class TypeProvider<T, P> {
      * <pre>
      * getClass().getName() + '@' + Integer.toHexString(hashCode())
      * </pre></blockquote>
-     * @since 1.1
+     * @since 1.1.0
      */
     @Override
     public String toString() {

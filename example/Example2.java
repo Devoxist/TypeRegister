@@ -30,29 +30,39 @@ public class Main {
 
     public static void main(String[] args)
             throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        TypeRegister.register(ResolvableType.class, ResolvableType::new);
-        TypeRegister.register(StaticType.class, new StaticType());
+        TypeRegister.register(new CustomTypeProvider<>(TestType.class, new CustomType<TestType>()));
 
         Example example = ConstructorResolver.initClass(Example.class);
-
-        TypeRegister.unregister(StaticType.class);
-        TypeRegister.register(StaticType.class, StaticType::new);
     }
 
 
     public static class Example {
 
         @ConstructorResolving
-        public Example(ResolvableType type) {
+        public Example(TestType type) {
             // Put here your stuff
         }
     }
 
-    public static class ResolvableType {
+    public static class CustomTypeProvider<T, P extends T> extends TypeProvider<T, CustomType<P>> {
+
+        public CustomTypeProvider(Class<T> type, CustomType<P> provider) {
+            super(type, provider);
+        }
+
+        @Override
+        public T getInitProvider() {
+            // Put here your stuff
+        }
+
         // Put here your stuff
     }
 
-    public static class StaticType {
+    public static class CustomType<P> {
+        // Put here your stuff
+    }
+
+    public static class TestType {
         // Put here your stuff
     }
 }

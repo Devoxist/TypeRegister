@@ -35,9 +35,9 @@ import java.util.function.Supplier;
  * @param <T> type of the {@link Supplier}
  *
  * @author Dev-Bjorn
- * @version 1.1
+ * @version 1.2.0
  * @apiNote This can be used to retrieve the type of the {@link Supplier}.
- * @since 1.1
+ * @since 1.1.0
  */
 @FunctionalInterface
 public interface SerializableSupplier<T> extends Serializable, Supplier<T> {
@@ -47,7 +47,7 @@ public interface SerializableSupplier<T> extends Serializable, Supplier<T> {
      *
      * @return The type of the {@link Supplier}
      *
-     * @since 1.1
+     * @since 1.1.0
      */
     @SuppressWarnings("unchecked")
     default Class<T> getSupplierClass() {

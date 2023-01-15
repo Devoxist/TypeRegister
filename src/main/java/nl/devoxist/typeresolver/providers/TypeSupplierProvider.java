@@ -22,6 +22,8 @@
 
 package nl.devoxist.typeresolver.providers;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.function.Supplier;
 
 /**
@@ -31,18 +33,20 @@ import java.util.function.Supplier;
  * @param <P> The type of the {@link Supplier} provider.
  *
  * @author Dev-Bjorn
- * @version 1.1
- * @since 1.1
+ * @version 1.2.0
+ * @since 1.1.0
  */
-public class TypeSupplierProvider<T, P extends T> extends TypeProvider<T, Supplier<P>> {
+public final class TypeSupplierProvider<T, P extends T> extends TypeProvider<T, Supplier<P>> {
 
     /**
-     * Construct the
+     * Construct a {@link TypeProvider} object. This object holds the {@link Supplier} object and the type.
      *
      * @param type     class type of the provider
      * @param provider the provider class
+     *
+     * @since 1.1.0
      */
-    public TypeSupplierProvider(Class<T> type, Supplier<P> provider) {
+    public TypeSupplierProvider(@NotNull Class<T> type, @NotNull Supplier<P> provider) {
         super(type, provider);
     }
 
@@ -51,7 +55,7 @@ public class TypeSupplierProvider<T, P extends T> extends TypeProvider<T, Suppli
      *
      * @return The initiated object of the provider.
      *
-     * @since 1.1
+     * @since 1.1.0
      */
     @Override
     public T getInitProvider() {

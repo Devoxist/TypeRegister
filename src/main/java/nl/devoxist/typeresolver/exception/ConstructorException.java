@@ -28,8 +28,8 @@ import java.io.Serial;
  * {@link ConstructorException} can be thrown during the construction of an object.
  *
  * @author Dev-Bjorn
- * @version 1.1
- * @since 1.0
+ * @version 1.2.0
+ * @since 1.0.0
  */
 public class ConstructorException extends RuntimeException {
     @Serial
@@ -40,7 +40,7 @@ public class ConstructorException extends RuntimeException {
      * detail message.  The cause is not initialized, and may subsequently be
      * initialized by a call to {@link #initCause}.
      *
-     * @since 1.0
+     * @since 1.0.0
      */
     public ConstructorException() {
     }
@@ -50,10 +50,10 @@ public class ConstructorException extends RuntimeException {
      * The cause is not initialized, and may subsequently be initialized by a
      * call to {@link #initCause}.
      *
-     * @param message the detail message. The detail message is saved for
+     * @param message The detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      *
-     * @since 1.0
+     * @since 1.0.0
      */
     public ConstructorException(String message) {
         super(message);
@@ -65,14 +65,14 @@ public class ConstructorException extends RuntimeException {
      * {@code cause} is <i>not</i> automatically incorporated in
      * this runtime exception's detail message.
      *
-     * @param message the detail message (which is saved for later retrieval
+     * @param message The detail message (which is saved for later retrieval
      *                by the {@link #getMessage()} method).
-     * @param cause   the cause (which is saved for later retrieval by the
+     * @param cause   The cause (which is saved for later retrieval by the
      *                {@link #getCause()} method).  (A {@code null} value is
      *                permitted, and indicates that the cause is nonexistent or
      *                unknown.)
      *
-     * @since 1.0
+     * @since 1.0.0
      */
     public ConstructorException(String message, Throwable cause) {
         super(message, cause);
@@ -83,14 +83,14 @@ public class ConstructorException extends RuntimeException {
      * detail message of {@code (cause==null ? null : cause.toString())}
      * (which typically contains the class and detail message of
      * {@code cause}).  This constructor is useful for runtime exceptions
-     * that are little more than wrappers for other throwables.
+     * that are little more than wrappers for other throwable.
      *
-     * @param cause the cause (which is saved for later retrieval by the
+     * @param cause The cause (which is saved for later retrieval by the
      *              {@link #getCause()} method).  (A {@code null} value is
      *              permitted, and indicates that the cause is nonexistent or
      *              unknown.)
      *
-     * @since 1.0
+     * @since 1.0.0
      */
     public ConstructorException(Throwable cause) {
         super(cause);
@@ -101,7 +101,7 @@ public class ConstructorException extends RuntimeException {
      * message, cause, suppression enabled or disabled, and writable
      * stack trace enabled or disabled.
      *
-     * @param message            the detail message.
+     * @param message            The detail message.
      * @param cause              The cause.  (A {@code null} value is permitted,
      *                           and indicates that the cause is nonexistent or unknown.)
      * @param enableSuppression  Whether suppression is enabled
@@ -109,7 +109,7 @@ public class ConstructorException extends RuntimeException {
      * @param writableStackTrace Whether the stack trace should
      *                           be writable
      *
-     * @since 1.0
+     * @since 1.0.0
      */
     public ConstructorException(
             String message,
