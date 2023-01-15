@@ -106,7 +106,6 @@ public final class TypeRegister {
      * @param <T>          type of the type
      * @param <P>          type of the provider
      *
-     * @throws RegisterException if the type is not assignable from the provider.
      * @apiNote A custom implementation of the {@link TypeProvider} is possible to create custom
      * {@link #getInitProvider(Class)} or {@link #getProviderByType(Class)}.
      * @since 1.2.0
@@ -177,6 +176,7 @@ public final class TypeRegister {
      *
      * @return {@link Supplier} of the provider.
      *
+     * @throws RegisterException If the provider is not registered.
      * @since 1.0.0
      * @deprecated Use {@link #getProviderByType(Class)}, scheduled for removal in V1.3.0
      */
@@ -202,6 +202,7 @@ public final class TypeRegister {
      *
      * @return {@link Supplier} of the provider.
      *
+     * @throws RegisterException If the provider is not registered.
      * @apiNote Override {@link TypeProvider#getInitProvider()} to get the custom implementation of this.
      * @since 1.0.0
      */
@@ -219,6 +220,7 @@ public final class TypeRegister {
      *
      * @return The initialized provider
      *
+     * @throws RegisterException If the provider is not registered.
      * @apiNote Override {@link TypeProvider#getInitProvider()} to get the custom implementation of this.
      * @since 1.0.0
      */
@@ -235,6 +237,7 @@ public final class TypeRegister {
      *
      * @return The {@link TypeProvider} of the type.
      *
+     * @throws RegisterException If the provider is not registered.
      * @since 1.1.0
      */
     @NotNull
