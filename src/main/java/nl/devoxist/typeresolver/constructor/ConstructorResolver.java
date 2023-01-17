@@ -24,6 +24,7 @@ package nl.devoxist.typeresolver.constructor;
 
 import nl.devoxist.typeresolver.TypeRegister;
 import nl.devoxist.typeresolver.exception.ConstructorException;
+import nl.devoxist.typeresolver.register.Register;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -51,7 +52,7 @@ import java.util.Optional;
  * }</pre>
  *
  * @author Dev-Bjorn
- * @version 1.2.0
+ * @version 1.3.0
  * @since 1.0.0
  */
 public final class ConstructorResolver {
@@ -72,10 +73,11 @@ public final class ConstructorResolver {
     }
 
     /**
-     * Used for initializing classes by the type resolver.
+     * Used for initializing classes by the type resolver. The {@link TypeRegister} is used to retrieve te parameters
+     * from.
      *
-     * @param tClass class to automatically initialize
-     * @param <T>    type of the class.
+     * @param tClass The class which need to be auto constructed.
+     * @param <T>    type of the class which gets auto constructed.
      *
      * @return initialized class.
      *
@@ -86,6 +88,7 @@ public final class ConstructorResolver {
      *                                   class.
      * @throws IllegalAccessException    if this Constructor object is enforcing Java language access control and the
      *                                   underlying constructor is inaccessible.
+     * @apiNote This uses the {@link TypeRegister} to search from.
      * @since 1.0.0
      */
     public static <T> T initClass(@NotNull Class<T> tClass)
@@ -95,15 +98,51 @@ public final class ConstructorResolver {
             InvocationTargetException,
             InstantiationException,
             IllegalAccessException {
-        Optional<Constructor<?>> optionalConstructor = getClassConstructor(tClass);
+        return initClass(tClass, TypeRegister.getRegister());
+    }
+
+    /**
+     * Initialize classes by the type resolver. This uses the specified registers to resolve the types used in the
+     * constructors of the
+     *
+     * @param tClass    The class which need to be auto constructed.
+     * @param registers The registers that are used to retrieve the types from.
+     * @param <T>       type of the class which gets auto constructed.
+     *
+     * @return The initialized class, which has been auto formed by the type resolver.
+     *
+     * @throws ConstructorException      if there is no valid constructor.
+     * @throws NoSuchMethodException     if a matching method is not found.
+     * @throws InvocationTargetException if the underlying constructor throws an exception.
+     * @throws InstantiationException    if the class that declares the underlying constructor represents an abstract
+     *                                   class.
+     * @throws IllegalAccessException    if this Constructor object is enforcing Java language access control and the
+     *                                   underlying constructor is inaccessible.
+     * @since 1.3.0
+     */
+    public static <T> T initClass(@NotNull Class<T> tClass, Register... registers)
+            throws
+            ConstructorException,
+            NoSuchMethodException,
+            InvocationTargetException,
+            InstantiationException,
+            IllegalAccessException {
+        Register searchableRegisters = new Register(registers);
+
+        Optional<Constructor<?>> optionalConstructor = getClassConstructor(tClass, searchableRegisters);
+
         if (optionalConstructor.isEmpty()) {
             throw new ConstructorException(String.format("%s has no valid constructor.", tClass.getSimpleName()));
         }
+
         Constructor<?> constructor = optionalConstructor.get();
-        Object[] initObjects = getResolvedObjects(constructor);
+
+        Object[] initObjects = getResolvedObjects(constructor, searchableRegisters);
+
         constructor.setAccessible(true);
         T clazz = tClass.cast(constructor.newInstance(initObjects));
         constructor.setAccessible(false);
+
         return clazz;
     }
 
@@ -118,13 +157,14 @@ public final class ConstructorResolver {
      * @throws NoSuchMethodException if a matching method is not found.
      * @since 1.0.0
      */
-    private static Optional<Constructor<?>> getClassConstructor(@NotNull Class<?> tClass) throws NoSuchMethodException {
+    private static Optional<Constructor<?>> getClassConstructor(@NotNull Class<?> tClass, Register register)
+            throws NoSuchMethodException {
         if ((tClass.getConstructors().length == 0 && tClass.getDeclaredConstructors().length == 0) ||
             hasConstructorWithNoParams(tClass.getConstructors())) {
             return Optional.of(tClass.getConstructor());
         }
-        Optional<Constructor<?>> constructor = getConstructor(tClass.getConstructors());
-        return constructor.isEmpty() ? getConstructor(tClass.getDeclaredConstructors()) : constructor;
+        Optional<Constructor<?>> constructor = getConstructor(tClass.getConstructors(), register);
+        return constructor.isEmpty() ? getConstructor(tClass.getDeclaredConstructors(), register) : constructor;
     }
 
     /**
@@ -137,9 +177,12 @@ public final class ConstructorResolver {
      * @since 1.0.0
      */
     @Contract(pure = true)
-    private static Object @NotNull [] getResolvedObjects(@NotNull Constructor<?> constructor) {
+    private static Object @NotNull [] getResolvedObjects(
+            @NotNull Constructor<?> constructor,
+            Register register
+    ) {
         return Arrays.stream(constructor.getParameterTypes())
-                .map(TypeRegister::getInitProvider)
+                .map(type -> register.getInitProvider(type, true))
                 .toArray();
     }
 
@@ -153,12 +196,15 @@ public final class ConstructorResolver {
      *
      * @since 1.0.0
      */
-    private static Optional<Constructor<?>> getConstructor(@NotNull Constructor<?> @NotNull [] constructors) {
+    private static Optional<Constructor<?>> getConstructor(
+            @NotNull Constructor<?> @NotNull [] constructors,
+            Register register
+    ) {
         try {
             return Arrays.stream(constructors)
                     .parallel()
                     .filter(constructor -> constructor.getAnnotation(ConstructorResolving.class) != null &&
-                                           hasResolvableTypes(constructor.getParameterTypes()))
+                                           hasResolvableTypes(constructor.getParameterTypes(), register))
                     .max(getConstructorComparator());
         } catch (NullPointerException e) {
             return Optional.empty();
@@ -174,8 +220,8 @@ public final class ConstructorResolver {
      *
      * @since 1.0.0
      */
-    private static boolean hasResolvableTypes(Class<?> @NotNull [] parameters) {
-        return Arrays.stream(parameters).parallel().allMatch(TypeRegister::hasProvider);
+    private static boolean hasResolvableTypes(Class<?> @NotNull [] parameters, Register register) {
+        return Arrays.stream(parameters).parallel().allMatch(type -> register.hasProvider(type, true));
     }
 
     /**

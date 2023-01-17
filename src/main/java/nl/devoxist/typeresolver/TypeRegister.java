@@ -23,232 +23,194 @@
 package nl.devoxist.typeresolver;
 
 import nl.devoxist.typeresolver.exception.RegisterException;
-import nl.devoxist.typeresolver.providers.TypeObjectProvider;
 import nl.devoxist.typeresolver.providers.TypeProvider;
-import nl.devoxist.typeresolver.providers.TypeSupplierProvider;
+import nl.devoxist.typeresolver.register.Register;
+import nl.devoxist.typeresolver.register.RegisterPriority;
 import nl.devoxist.typeresolver.supplier.SerializableSupplier;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * {@link TypeRegister} is an object that registers the {@link TypeProvider}s.
+ * {@link TypeRegister} is an object that registers the {@link TypeProvider}s. This can be used as the general registery
+ * of these types. This {@link Register} uses the {@link RegisterPriority#NORMAL}.
  *
  * @author Dev-Bjorn
- * @version 1.2.0
+ * @version 1.3.0
  * @since 1.0.0
  */
 public final class TypeRegister {
     /**
-     * The map of the registered types with the corresponding {@link TypeProvider}.
+     * The register of the {@link TypeRegister}.
      *
-     * @since 1.0.0
+     * @since 1.3.0
      */
-    private static final Map<Class<?>, TypeProvider<?, ?>> typeProviders = new HashMap<>();
+    private static final Register REGISTER = new Register();
 
     /**
-     * Register a type with a provider.
+     * Construct a new {@link TypeRegister} object. This always fails, because the class is a static class. So it
+     * only contains static objects. Thus, it throws an {@link IllegalAccessException}.
      *
-     * @param typeClazz The typeClazz with a link to the provider.
-     * @param provider  The {@link Supplier} of the provider.
-     * @param <T>       type of the typeClazz
-     * @param <P>       type of the provider
+     * @throws IllegalAccessException If the {@link TypeRegister} was try to construct the class. The
+     *                                construction of this class is not possible, because this is a static class.
+     * @since 1.3.0
+     */
+    @Contract(value = " -> fail",
+              pure = true)
+    @ApiStatus.Internal
+    private TypeRegister() throws IllegalAccessException {
+        throw new IllegalAccessException("This class is an static class, so this class cannot be initialized.");
+    }
+
+    /**
+     * Get the {@link Register} of the {@link TypeRegister}.
+     *
+     * @return The {@link Register} of the {@link TypeRegister}.
+     */
+    @Contract(pure = true)
+    public static Register getRegister() {
+        return REGISTER;
+    }
+
+    /**
+     * Register a type with a {@link Supplier} provider. The registering of a {@link TypeProvider} causes a link to
+     * appear in the {@link TypeRegister}.
+     *
+     * @param type     The type which is going to be registered and linked to the provider.
+     * @param provider The {@link Supplier} provider of the type which is going to be registered and linked to the type.
+     * @param <T>      type of the type which is going to be registered.
+     * @param <P>      type of the {@link Supplier} provider which is going to be registered.
+     *
+     * @return if {@code true} the {@link TypeProvider} is registered.
      *
      * @throws RegisterException if the type is not assignable from the provider.
      * @since 1.0.0
      */
-    public static <T, P extends T> void register(
-            @NotNull Class<T> typeClazz,
+    public static <T, P extends T> boolean register(
+            @NotNull Class<T> type,
             @NotNull SerializableSupplier<P> provider
     ) {
-        Class<?> type = provider.getSupplierClass();
-
-        if (!typeClazz.isAssignableFrom(type)) {
-            throw new RegisterException("The type is not assignable from the provider.");
-        }
-
-        TypeProvider<T, ?> typeProvider = new TypeSupplierProvider<>(typeClazz, provider);
-
-        typeProviders.putIfAbsent(typeClazz, typeProvider);
+        return REGISTER.register(type, provider);
     }
 
     /**
-     * Register a type with a provider.
+     * Register a type with a provider. The registering of a {@link TypeProvider} causes a link to appear in the
+     * {@link TypeRegister}.
      *
-     * @param typeClazz The typeClazz with a link to the provider.
-     * @param provider  The {@link Supplier} of the provider.
-     * @param <T>       type of the typeClazz
-     * @param <P>       type of the provider
+     * @param type     The type which is going to be registered and linked to the provider.
+     * @param provider The provider of the type which is going to be registered and linked to the type.
+     * @param <T>      type of the type which is going to be registered.
+     * @param <P>      type of the provider which is going to be registered.
+     *
+     * @return if {@code true} the {@link TypeProvider} is registered.
      *
      * @throws RegisterException if the type is not assignable from the provider.
      * @since 1.1.0
      */
-    @SuppressWarnings("unchecked")
-    public static <T, P> void register(@NotNull Class<T> typeClazz, @NotNull P provider) {
-        Class<?> type = provider.getClass();
-
-        if (!typeClazz.isAssignableFrom(type)) {
-            throw new RegisterException("The type is not assignable from the provider.");
-        }
-
-        TypeProvider<T, ?> typeProvider = new TypeObjectProvider<>(typeClazz, (T) provider);
-
-        typeProviders.putIfAbsent(typeClazz, typeProvider);
+    public static <T, P> boolean register(@NotNull Class<T> type, @NotNull P provider) {
+        return REGISTER.register(type, provider);
     }
 
     /**
-     * Register a type with a {@link TypeProvider}.
+     * Register a type with a {@link TypeProvider}. A custom implementation of the {@link TypeProvider} is possible to
+     * override the {@link TypeProvider} class. The registering of a {@link TypeProvider} causes a link to appear in
+     * the {@link TypeRegister}.
      *
-     * @param typeProvider The {@link TypeProvider}.
-     * @param <T>          type of the type
-     * @param <P>          type of the provider
+     * @param typeProvider The {@link TypeProvider} which is going to be registered.
+     * @param <T>          type of the type of the {@link TypeProvider}.
+     * @param <P>          type of the provider of the {@link TypeProvider#getProvider()}.
      *
-     * @apiNote A custom implementation of the {@link TypeProvider} is possible to create custom
-     * {@link #getInitProvider(Class)} or {@link #getProviderByType(Class)}.
+     * @return if {@code true} the {@link TypeProvider} is registered.
+     *
      * @since 1.2.0
      */
-    public static <T, P> void register(
+    public static <T, P> boolean register(
             TypeProvider<T, P> typeProvider
     ) {
-        typeProviders.putIfAbsent(typeProvider.getType(), typeProvider);
+        return REGISTER.register(typeProvider);
     }
 
     /**
-     * Unregister a type by its {@link TypeProvider}.
+     * Unregister a type by its {@link TypeProvider}. Unregistering a {@link TypeProvider} causes the link to disappear
+     * between the type and provider in the {@link TypeRegister}.
      *
-     * @param typeProvider The {@link TypeProvider}.
-     * @param <T>          type of the type
-     * @param <P>          type of the provider
+     * @param typeProvider The {@link TypeProvider} which is going to be unregistered.
+     * @param <T>          type of the type of the {@link TypeProvider}.
+     * @param <P>          type of the provider of the {@link TypeProvider#getProvider()}.
      *
-     * @apiNote This uses {@link TypeProvider#getType()} to remove the object from {@link #typeProviders}.
+     * @throws RegisterException If the type is not registered.
      * @since 1.2.0
      */
     public static <T, P> void unregister(
             @NotNull TypeProvider<T, P> typeProvider
     ) {
-        Class<T> type = typeProvider.getType();
-        unregister(type);
+        REGISTER.unregister(typeProvider);
     }
 
     /**
-     * Unregister a type by its type.
+     * Unregister a type by its type. Unregistering a {@link TypeProvider} causes the link to disappear between the type
+     * and provider in the {@link TypeRegister}.
      *
-     * @param type The type of the provider.
-     * @param <T>  type of the type
+     * @param type The type which is going to be unregistered.
+     * @param <T>  type of the type which is going to be unregistered.
      *
+     * @throws RegisterException If the type is not registered.
      * @since 1.2.0
      */
     public static <T> void unregister(
             Class<T> type
     ) {
-        if (!typeProviders.containsKey(type)) {
-            throw new RegisterException("'%s' is not registered.".formatted(type.getName()));
-        }
-
-        typeProviders.remove(type);
+        REGISTER.unregister(type);
     }
 
 
     /**
-     * Check if the typeClazz is registered.
+     * Check if the type is registered. The check is done over this {@link Register}.
      *
-     * @param typeClazz typeClazz to check if it is registered.
-     * @param <T>       type of the typeClazz.
+     * @param type The type to check, if there is a link with any registered provider ({@link TypeProvider}).
+     * @param <T>  type of the type to check.
      *
-     * @return If {@code true} the typeClazz is already registered.
+     * @return If {@code true} the type is registered.
      *
      * @since 1.0.0
      */
     @Contract(pure = true)
-    public static <T> boolean hasProvider(Class<T> typeClazz) {
-        return typeProviders.containsKey(typeClazz);
+    public static <T> boolean hasProvider(Class<T> type) {
+        return REGISTER.hasProvider(type);
     }
 
     /**
-     * Get {@link Supplier} of the provider.
+     * Search and get the provider by its type. A way to create a custom implementation is to override the
+     * {@link TypeProvider#getProvider()} in a custom {@link TypeProvider}.
      *
-     * @param typeClazz The type to get the provider from.
-     * @param <T>       type of the typeClazz
-     * @param <P>       type of the provider.
+     * @param type The type to search the link from between the provider ({@link TypeProvider}).
+     * @param <T>  type of the type to search the link from.
+     * @param <P>  type of the provider which has been searched and linked to the type ({@link TypeProvider}).
      *
-     * @return {@link Supplier} of the provider.
+     * @return The provider which has been searched by its type.
      *
      * @throws RegisterException If the provider is not registered.
      * @since 1.0.0
-     * @deprecated Use {@link #getProviderByType(Class)}, scheduled for removal in V1.3.0
      */
-    @SuppressWarnings("unchecked")
-    @Deprecated(since = "1.1",
-                forRemoval = true)
-    public static <T, P> @NotNull Supplier<P> getProvider(Class<T> typeClazz) {
-        TypeProvider<?, ?> typeProvider = findTypeProvider(typeClazz);
-
-        if (!(typeProvider instanceof TypeSupplierProvider<?, ?> typeSupplierProvider)) {
-            throw new RegisterException("The provider of '%s' is not a supplier.".formatted(typeClazz.getName()));
-        }
-
-        return (Supplier<P>) typeSupplierProvider.getProvider();
+    public static <T, P> @NotNull P getProviderByType(Class<T> type) {
+        return REGISTER.getProviderByType(type);
     }
 
     /**
-     * Get the provider by its type.
+     * Search and get the initialized provider. A way to create a custom implementation is to override the
+     * {@link TypeProvider#getInitProvider()} in a custom {@link TypeProvider}.
      *
-     * @param typeClazz The type to get the provider from.
-     * @param <T>       type of the typeClazz
-     * @param <P>       type of the provider
+     * @param type The type to search the link from between the provider ({@link TypeProvider}).
+     * @param <T>  type of the type to search the link from.
      *
-     * @return {@link Supplier} of the provider.
+     * @return The initialized provider which has been searched by its type.
      *
      * @throws RegisterException If the provider is not registered.
-     * @apiNote Override {@link TypeProvider#getInitProvider()} to get the custom implementation of this.
      * @since 1.0.0
      */
-    @SuppressWarnings("unchecked")
-    public static <T, P> @NotNull P getProviderByType(Class<T> typeClazz) {
-        TypeProvider<T, ?> typeProvider = findTypeProvider(typeClazz);
-        return (P) typeProvider.getProvider();
-    }
-
-    /**
-     * Get the initialized provider.
-     *
-     * @param typeClazz The type of the {@link TypeProvider}.
-     * @param <T>       type of the typeClazz
-     *
-     * @return The initialized provider
-     *
-     * @throws RegisterException If the provider is not registered.
-     * @apiNote Override {@link TypeProvider#getInitProvider()} to get the custom implementation of this.
-     * @since 1.0.0
-     */
-    public static <T> @NotNull T getInitProvider(Class<T> typeClazz) {
-        TypeProvider<T, ?> typeProvider = findTypeProvider(typeClazz);
-        return typeProvider.getInitProvider();
-    }
-
-    /**
-     * Get the {@link TypeProvider} of the type.
-     *
-     * @param typeClazz The type of the provider
-     * @param <T>       type of the type.
-     *
-     * @return The {@link TypeProvider} of the type.
-     *
-     * @throws RegisterException If the provider is not registered.
-     * @since 1.1.0
-     */
-    @NotNull
-    @SuppressWarnings("unchecked")
-    private static <T> TypeProvider<T, ?> findTypeProvider(Class<T> typeClazz) {
-        TypeProvider<?, ?> typeProvider = typeProviders.get(typeClazz);
-
-        if (typeProvider == null) {
-            throw new RegisterException("The provider of '%s' is not registered.".formatted(typeClazz.getName()));
-        }
-
-        return (TypeProvider<T, ?>) typeProvider;
+    public static <T> @NotNull T getInitProvider(Class<T> type) {
+        return REGISTER.getInitProvider(type);
     }
 }

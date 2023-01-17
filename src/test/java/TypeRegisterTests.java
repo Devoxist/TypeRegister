@@ -149,7 +149,6 @@ public class TypeRegisterTests {
     public void checkIfGottenTypeSameType1() {
         TypeRegister.register(TestClass.class, TestClass::new);
 
-        Assertions.assertEquals(TestClass.class, TypeRegister.getProvider(TestClass.class).get().getClass());
         Assertions.assertEquals(
                 TestClass.class,
                 ((Supplier<?>) TypeRegister.getProviderByType(TestClass.class)).get().getClass()

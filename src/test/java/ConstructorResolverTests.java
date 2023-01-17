@@ -25,6 +25,8 @@ import nl.devoxist.typeresolver.constructor.ConstructorPriority;
 import nl.devoxist.typeresolver.constructor.ConstructorResolver;
 import nl.devoxist.typeresolver.constructor.ConstructorResolving;
 import nl.devoxist.typeresolver.providers.TypeProvider;
+import nl.devoxist.typeresolver.register.Register;
+import nl.devoxist.typeresolver.register.RegisterPriority;
 import org.jetbrains.annotations.Contract;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -87,6 +89,7 @@ public class ConstructorResolverTests {
         Assertions.assertEquals(provider, testCls.constructionClass);
 
         TypeRegister.unregister(TestClass.class);
+        TypeRegister.unregister(ConstructionClass.class);
     }
 
     @Test
@@ -117,6 +120,41 @@ public class ConstructorResolverTests {
         Assertions.assertNull(testCls2.constructionClass);
 
         TypeRegister.unregister(TestClass.class);
+        TypeRegister.unregister(ConstructionClass.class);
+    }
+
+    @Test
+    public void checkIfConstructionIsCorrectInitialized6()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        Register register1 = new Register(RegisterPriority.HIGHEST);
+        TestClass provider1 = new TestClass(2);
+        register1.register(TestClass.class, provider1);
+        Register register = new Register(register1);
+        TestClass provider = new TestClass(1);
+        register.register(TestClass.class, provider);
+
+        TestCls2 testCls2 = ConstructorResolver.initClass(TestCls2.class, register);
+        Assertions.assertEquals(provider1, testCls2.testClass);
+        Assertions.assertEquals(provider1.i, testCls2.testClass.i);
+        Assertions.assertNull(testCls2.constructionClass);
+    }
+
+    @Test
+    public void checkIfConstructionIsCorrectInitialized7()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        Register register1 = new Register(RegisterPriority.HIGHEST);
+        TestClass provider1 = new TestClass(2);
+        register1.register(TestClass.class, provider1);
+        Register register = new Register(register1);
+        TestClass provider = new TestClass(1);
+        register.register(TestClass.class, provider);
+        TestClass provider2 = new TestClass(3);
+        TypeRegister.register(TestClass.class, provider2);
+
+        TestCls2 testCls2 = ConstructorResolver.initClass(TestCls2.class);
+        Assertions.assertEquals(provider2, testCls2.testClass);
+        Assertions.assertEquals(provider2.i, testCls2.testClass.i);
+        Assertions.assertNull(testCls2.constructionClass);
     }
 
     public static class TestClass {
