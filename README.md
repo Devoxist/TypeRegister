@@ -5,7 +5,8 @@
 
 ### Getting Started
 
-How to install this API? Currently, it is only possible to add this API with maven.
+How to install this API? For all possible options to install this API [maven
+central](https://search.maven.org/artifact/nl.devoxist/TypeRegister) and select the version.
 
 #### Maven
 
@@ -40,7 +41,7 @@ public class ResolvableType {
 ```
 
 ```java 
-TypeRegister.register(ResolvableType.class,ResolvableType::new);
+TypeRegister.register(ResolvableType.class, ResolvableType::new);
 ```
 
 ##### Static Types
@@ -56,7 +57,7 @@ public class StaticType {
 ```
 
 ```java 
-TypeRegister.register(StaticType.class,new StaticType());
+TypeRegister.register(StaticType.class, new StaticType());
 ```
 
 ##### Unregister Types
@@ -65,8 +66,8 @@ How to unregister a type? The type of the registered `TypeProvider` is parameter
 the `TypeRegister#unregister(Class)`. The only condition of unregistering a type, that the type needs to be registered.
 
 ```java 
-TypeRegister.register(StaticType.class,new StaticType());
-        TypeRegister.unregister(StaticType.class);
+TypeRegister.register(StaticType.class, new StaticType());
+TypeRegister.unregister(StaticType.class);
 ```
 
 ##### Custom Types
@@ -97,7 +98,7 @@ public static class CustomType<P> {
 How can this `CustomTypeProvider` be registered? Use the method `register(TypeProvider)` in `TypeRegister`.
 
 ```java
-TypeRegister.register(new CustomTypeProvider(TestClass.class,new CustomType<TestClass>()));
+TypeRegister.register(new CustomTypeProvider(TestClass.class, new CustomType<TestClass>()));
 ```
 
 #### Auto construct classes
@@ -132,8 +133,8 @@ public class StaticType {
 First u need to add the class ResolvableType to the type register. This can be done by the code below.
 
 ```java 
-TypeRegister.register(ResolvableType.class,ResolvableType::new);
-        TypeRegister.register(StaticType.class,new StaticType());
+TypeRegister.register(ResolvableType.class, ResolvableType::new);
+TypeRegister.register(StaticType.class, new StaticType());
 ```
 
 After the type have been registered, it is possible to resolve the constructor.
@@ -142,41 +143,48 @@ After the type have been registered, it is possible to resolve the constructor.
 Example example=ConstructorResolver.initClass(Example.class);
 ```
 
-##### Full Example
+#### Custom Registries
+
+How to create a custom registry? Construct a new `Register` object.
 
 ```java
-import TypeRegister;
-import ConstructorResolver;
-import ConstructorResolving;
-
-public class Main {
-
-    public static void main(String[] args)
-            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        TypeRegister.register(ResolvableType.class, ResolvableType::new);
-        TypeRegister.register(StaticType.class, new StaticType());
-
-        Example example = ConstructorResolver.initClass(Example.class);
-    }
-
-
-    public class Example {
-
-        @ConstructorResolving
-        public Example(ResolvableType type, StaticType staticType) {
-            // Put here your stuff
-        }
-    }
-
-    public class ResolvableType {
-        // Put here your stuff
-    }
-
-    public class StaticType {
-        // Put here your stuff
-    }
-}
+Register register = new Register();
 ```
+
+All the same options which have been included in the `TypeRegister` are included in the Custom Register. Beside these
+options is there also an option to "combine" registries. There are options included in some functions of the class which
+allow the end-user to search and check between these "combined" registries. All the defaults for the functions are the
+option which uses the non "combined" registries.
+
+How to create combined registries? In the constructor of `Register` it is possible to add registries. These register
+arguments of the constructor makes the combined registery.
+
+```java
+Register register = new Register();
+Register secondRegister = new Register(register);
+```
+
+All the defaults of: `Register#hasProvider`, `Register#getProviderByType` and `Register#getInitProvider` takes the non
+combined registery. Use the method with the option `allRegisters` and set it to `true` to use the combined registries
+instead of the single registery.
+
+In the construction phase of a `Register` there is also an option to add a priority. This priority option is used to
+prioritize the combined registries. So if there are in two registries the same key the registry with the highest
+priority will get retrieved.
+
+```java
+Register register = new Register(RegisteryPriority.HIGHEST);
+Register secondRegister = new Register(register);
+```
+
+These custom registries can also be used in the `ConstructorResolver`. Use the
+method `ConstructorResolver#initClass(Class<?>,Register...)` to choose which registries the resolver to use. If chosen
+register is `TypeRegister` use `TypeRegister#getRegister` and add this to the parameters. The default registry is
+the `TypeRegister`. This is automatically used if no registries are given.
+
+##### Full Example
+
+For the full examples go to the directory examples and find the examples.
 
 ### Contributors
 

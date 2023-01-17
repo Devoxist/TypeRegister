@@ -20,26 +20,47 @@
  * SOFTWARE.
  */
 
-package nl.devoxist.typeresolver;
+package nl.devoxist.typeresolver.register;
 
-import java.util.function.Supplier;
 
 /**
- * This can be used to link a type to a provider clazz. This is normal only used to a class that can only be initialized
- * once.
- *
- * @param type     class type of the provider
- * @param provider the provider class
- * @param <T>      type of type
- * @param <P>      type of provider
+ * The priority's of the register.
+ * <p>
+ * The higher the priority the sooner the register is searched through or checked if a type exists.
  *
  * @author Dev-Bjorn
- * @version 1.2.0
- * @since 1.0.0
- * @deprecated Use {@link nl.devoxist.typeresolver.providers.TypeProvider}, scheduled for removal in V1.3.0
+ * @version 1.3.0
+ * @since 1.3.0
  */
-@Deprecated(since = "1.1",
-            forRemoval = true)
-public record TypeProvider<T, P extends T>(Class<T> type, Supplier<P> provider) {
-
+public enum RegisterPriority {
+    /**
+     * The lowest priority, used when the no objects were found in the registers with higher priorities.
+     *
+     * @since 1.3.0
+     */
+    LOWEST,
+    /**
+     * The low priority, used when the no objects were found in the registers with higher priorities.
+     *
+     * @since 1.3.0
+     */
+    LOW,
+    /**
+     * The normal priority, used when the no objects were found in the registers with higher priorities.
+     *
+     * @since 1.3.0
+     */
+    NORMAL,
+    /**
+     * The high priority, used when the no objects were found in the registers with higher priorities.
+     *
+     * @since 1.3.0
+     */
+    HIGH,
+    /**
+     * The highest priority, used when the no objects were found in the registers with higher priorities.
+     *
+     * @since 1.3.0
+     */
+    HIGHEST
 }
