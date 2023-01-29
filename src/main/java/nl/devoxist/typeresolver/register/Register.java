@@ -41,7 +41,7 @@ import java.util.function.Supplier;
  * used to create custom {@link Register}s.
  *
  * @author Dev-Bjorn
- * @version 1.3.0
+ * @version 1.3.1
  * @since 1.3.0
  */
 public final class Register implements Cloneable, Comparable<Register> {
@@ -564,7 +564,10 @@ public final class Register implements Cloneable, Comparable<Register> {
      */
     @Override
     public int compareTo(@NotNull Register o) {
-        return Comparator.comparing(Register::getPriority).reversed().compare(this, o);
+        return Comparator.comparing(Register::getPriority)
+                .thenComparing(register -> register.getTypeProviders().keySet().hashCode())
+                .reversed()
+                .compare(this, o);
     }
 
     /**

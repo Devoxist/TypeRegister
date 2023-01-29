@@ -164,6 +164,32 @@ public class CombinedCustomRegisterTests {
     }
 
     @Test
+    public void checkIfGottenTypeSameType4() {
+        Register register = new Register();
+        TestClass provider = new TestClass();
+        register.register(TestClass.class, provider);
+        Register register2 = new Register(register);
+        TestCls provider2 = new TestCls(2);
+        register2.register(TestCls.class, provider2);
+        Register register1 = new Register(register2);
+        TestCls provider1 = new TestCls(1);
+        register1.register(TestCls.class, provider1);
+
+        Assertions.assertEquals(3, register1.getRegistries().size());
+
+
+        Assertions.assertEquals(
+                provider,
+                register1.getInitProvider(TestClass.class, true)
+        );
+        Assertions.assertThrowsExactly(
+                RegisterException.class,
+                () -> register1.getInitProvider(TestClass.class),
+                "The provider of 'TestClass' is not registered."
+        );
+    }
+
+    @Test
     public void checkIfUnregisterType() {
         Register register1 = new Register(RegisterPriority.HIGHEST);
         TestClass provider1 = new TestClass();
@@ -177,6 +203,7 @@ public class CombinedCustomRegisterTests {
         Assertions.assertFalse(register.hasProvider(TestClass.class));
         Assertions.assertTrue(register.hasProvider(TestClass.class, true));
     }
+
 
     public static class TestClass {
 
