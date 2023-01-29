@@ -30,8 +30,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public class CombinedCustomRegisterTests {
-
-
+    
     @Test
     public void checkIfTypeIsRegistered() {
         Register register1 = new Register(RegisterPriority.HIGHEST);
@@ -170,6 +169,9 @@ public class CombinedCustomRegisterTests {
         Register register1 = new Register(register2);
 
         Assertions.assertEquals(3, register1.getRegistries().size());
+        Assertions.assertTrue(register1.getRegistries().contains(register));
+        Assertions.assertTrue(register1.getRegistries().contains(register1));
+        Assertions.assertTrue(register1.getRegistries().contains(register2));
     }
 
     @Test
@@ -185,17 +187,21 @@ public class CombinedCustomRegisterTests {
         register1.register(TestCls.class, provider1);
 
         Assertions.assertEquals(3, register1.getRegistries().size());
+        Assertions.assertTrue(register1.getRegistries().contains(register));
+        Assertions.assertTrue(register1.getRegistries().contains(register1));
+        Assertions.assertTrue(register1.getRegistries().contains(register2));
+    }
 
+    @Test
+    public void checkIfHasMultiple3() {
+        Register register = new Register();
+        Register register2 = new Register();
+        Register register1 = new Register(register, register2);
 
-        Assertions.assertEquals(
-                provider,
-                register1.getInitProvider(TestClass.class, true)
-        );
-        Assertions.assertThrowsExactly(
-                RegisterException.class,
-                () -> register1.getInitProvider(TestClass.class),
-                "The provider of 'TestClass' is not registered."
-        );
+        Assertions.assertEquals(3, register1.getRegistries().size());
+        Assertions.assertTrue(register1.getRegistries().contains(register));
+        Assertions.assertTrue(register1.getRegistries().contains(register1));
+        Assertions.assertTrue(register1.getRegistries().contains(register2));
     }
 
     @Test

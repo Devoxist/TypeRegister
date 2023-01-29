@@ -41,7 +41,7 @@ import java.util.function.Supplier;
  * used to create custom {@link Register}s.
  *
  * @author Dev-Bjorn
- * @version 1.3.2
+ * @version 1.3.3
  * @since 1.3.0
  */
 public final class Register implements Cloneable, Comparable<Register> {
@@ -116,7 +116,7 @@ public final class Register implements Cloneable, Comparable<Register> {
         this.priority = priority;
 
         Supplier<Set<Register>> setSupplier = TreeSet::new;
-        this.registers = MergeSets.mergeSets(Set.of(registers), Register::getRegistries, setSupplier);
+        this.registers = MergeSets.mergeSets(new TreeSet<>(List.of(registers)), Register::getRegistries, setSupplier);
         this.registers.add(this);
     }
 
