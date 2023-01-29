@@ -157,6 +157,17 @@ public class ConstructorResolverTests {
         Assertions.assertNull(testCls2.constructionClass);
     }
 
+    @Test
+    public void checkIfConstructionIsCorrectInitialized8()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        Register register1 = new Register(RegisterPriority.HIGHEST);
+        TestClass provider1 = new TestClass(2);
+        register1.register(TestClass.class, provider1);
+
+        ConstructionClass2 testCls2 = ConstructorResolver.initClass(ConstructionClass2.class, false, register1);
+        Assertions.assertEquals(provider1, testCls2.testClass);
+    }
+
     public static class TestClass {
         public int i;
 
@@ -174,6 +185,13 @@ public class ConstructorResolverTests {
         @Contract(pure = true)
         @ConstructorResolving
         public ConstructionClass {
+        }
+
+    }
+
+    public record ConstructionClass2(TestClass testClass) {
+        @Contract(pure = true)
+        public ConstructionClass2 {
         }
 
     }

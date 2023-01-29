@@ -130,6 +130,7 @@ public class StaticType {
 }
 ```
 
+
 First u need to add the class ResolvableType to the type register. This can be done by the code below.
 
 ```java 
@@ -141,7 +142,17 @@ After the type have been registered, it is possible to resolve the constructor.
 
 ```java 
 Example example=ConstructorResolver.initClass(Example.class);
+
 ```
+
+#### ConstructorResolver Options
+
+##### No annotation
+
+Use the `ConstructorResolver#initClass` with the parameter needAnnotation. This will remove the condition to use the
+annotation `@ConstructorResolver` on the constructor. This will not sort the constructors on the priority and does not
+keep track of the use of the annotation `@ConstructorResolver`. The default of this option is that it needs the
+annotation `@ConstructorResolver`.
 
 #### Custom Registries
 

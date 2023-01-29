@@ -52,7 +52,7 @@ import java.util.Optional;
  * }</pre>
  *
  * @author Dev-Bjorn
- * @version 1.3.0
+ * @version 1.4.0
  * @since 1.0.0
  */
 public final class ConstructorResolver {
@@ -74,7 +74,7 @@ public final class ConstructorResolver {
 
     /**
      * Used for initializing classes by the type resolver. The {@link TypeRegister} is used to retrieve te parameters
-     * from.
+     * from. The constructors need to have the annotation {@link ConstructorResolving}.
      *
      * @param tClass The class which need to be auto constructed.
      * @param <T>    type of the class which gets auto constructed.
@@ -98,12 +98,12 @@ public final class ConstructorResolver {
             InvocationTargetException,
             InstantiationException,
             IllegalAccessException {
-        return initClass(tClass, TypeRegister.getRegister());
+        return initClass(tClass, true, TypeRegister.getRegister());
     }
 
     /**
      * Initialize classes by the type resolver. This uses the specified registers to resolve the types used in the
-     * constructors of the
+     * constructors. The constructors need to have the annotation {@link ConstructorResolving}.
      *
      * @param tClass    The class which need to be auto constructed.
      * @param registers The registers that are used to retrieve the types from.
@@ -127,9 +127,69 @@ public final class ConstructorResolver {
             InvocationTargetException,
             InstantiationException,
             IllegalAccessException {
+        return initClass(tClass, true, registers);
+    }
+
+    /**
+     * Used for initializing classes by the type resolver. The {@link TypeRegister} is used to retrieve te parameters
+     * from.
+     *
+     * @param tClass         The class which need to be auto constructed.
+     * @param needAnnotation Whether the annotation {@link ConstructorResolving} is needed on a constructor.
+     * @param <T>            type of the class which gets auto constructed.
+     *
+     * @return initialized class.
+     *
+     * @throws ConstructorException      if there is no valid constructor.
+     * @throws NoSuchMethodException     if a matching method is not found.
+     * @throws InvocationTargetException if the underlying constructor throws an exception.
+     * @throws InstantiationException    if the class that declares the underlying constructor represents an abstract
+     *                                   class.
+     * @throws IllegalAccessException    if this Constructor object is enforcing Java language access control and the
+     *                                   underlying constructor is inaccessible.
+     * @apiNote This uses the {@link TypeRegister} to search from.
+     * @since 1.4.0
+     */
+    public static <T> T initClass(@NotNull Class<T> tClass, boolean needAnnotation)
+            throws
+            ConstructorException,
+            NoSuchMethodException,
+            InvocationTargetException,
+            InstantiationException,
+            IllegalAccessException {
+        return initClass(tClass, needAnnotation, TypeRegister.getRegister());
+    }
+
+    /**
+     * Initialize classes by the type resolver. This uses the specified registers to resolve the types used in the
+     * constructors of the
+     *
+     * @param tClass         The class which need to be auto constructed.
+     * @param needAnnotation Whether the annotation {@link ConstructorResolving} is needed on a constructor.
+     * @param registers      The registers that are used to retrieve the types from.
+     * @param <T>            type of the class which gets auto constructed.
+     *
+     * @return The initialized class, which has been auto formed by the type resolver.
+     *
+     * @throws ConstructorException      if there is no valid constructor.
+     * @throws NoSuchMethodException     if a matching method is not found.
+     * @throws InvocationTargetException if the underlying constructor throws an exception.
+     * @throws InstantiationException    if the class that declares the underlying constructor represents an abstract
+     *                                   class.
+     * @throws IllegalAccessException    if this Constructor object is enforcing Java language access control and the
+     *                                   underlying constructor is inaccessible.
+     * @since 1.4.0
+     */
+    public static <T> T initClass(@NotNull Class<T> tClass, boolean needAnnotation, Register... registers)
+            throws
+            ConstructorException,
+            NoSuchMethodException,
+            InvocationTargetException,
+            InstantiationException,
+            IllegalAccessException {
         Register searchableRegisters = new Register(registers);
 
-        Optional<Constructor<?>> optionalConstructor = getClassConstructor(tClass, searchableRegisters);
+        Optional<Constructor<?>> optionalConstructor = getClassConstructor(tClass, needAnnotation, searchableRegisters);
 
         if (optionalConstructor.isEmpty()) {
             throw new ConstructorException(String.format("%s has no valid constructor.", tClass.getSimpleName()));
@@ -150,27 +210,37 @@ public final class ConstructorResolver {
      * Get the constructor of a class. First it will check if there is a constructor or a public constructor has no
      * parameters. If non there will be looked for a constructor with resolvable types.
      *
-     * @param tClass class to get the constructors from.
+     * @param tClass         The class to get the constructors from.
+     * @param needAnnotation Whether the annotation {@link ConstructorResolving} is needed on a constructor.
+     * @param register       Which registers need to be used to resolve the types of the constructors.
      *
      * @return {@link Optional} of a constructor. This will be empty if no valid constructor is found.
      *
-     * @throws NoSuchMethodException if a matching method is not found.
+     * @throws NoSuchMethodException If a matching method is not found.
+     * @
      * @since 1.0.0
      */
-    private static Optional<Constructor<?>> getClassConstructor(@NotNull Class<?> tClass, Register register)
+    private static Optional<Constructor<?>> getClassConstructor(
+            @NotNull Class<?> tClass,
+            boolean needAnnotation,
+            Register register
+    )
             throws NoSuchMethodException {
         if ((tClass.getConstructors().length == 0 && tClass.getDeclaredConstructors().length == 0) ||
             hasConstructorWithNoParams(tClass.getConstructors())) {
             return Optional.of(tClass.getConstructor());
         }
-        Optional<Constructor<?>> constructor = getConstructor(tClass.getConstructors(), register);
-        return constructor.isEmpty() ? getConstructor(tClass.getDeclaredConstructors(), register) : constructor;
+        Optional<Constructor<?>> constructor = getConstructor(tClass.getConstructors(), needAnnotation, register);
+        return constructor.isEmpty() ?
+                getConstructor(tClass.getDeclaredConstructors(), needAnnotation, register) :
+                constructor;
     }
 
     /**
      * Get the resolved objects of a constructor.
      *
      * @param constructor constructor to resolve the types from
+     * @param register    Which registers need to be used to resolve the types of the constructors.
      *
      * @return resolved objects of the given constructor.
      *
@@ -190,7 +260,9 @@ public final class ConstructorResolver {
      * Get a constructor that has the {@link ConstructorResolving} annotation. This constructor can only have resolvable
      * types. Those will be provided by the {@link TypeRegister}.
      *
-     * @param constructors constructors that will be checked to the conditions.
+     * @param constructors   constructors that will be checked to the conditions.
+     * @param needAnnotation Whether the annotation {@link ConstructorResolving} is needed on a constructor.
+     * @param register       Which registers need to be used to resolve the types of the constructors.
      *
      * @return constructor with the highest {@link ConstructorPriority} and that has resolvable types.
      *
@@ -198,9 +270,16 @@ public final class ConstructorResolver {
      */
     private static Optional<Constructor<?>> getConstructor(
             @NotNull Constructor<?> @NotNull [] constructors,
+            boolean needAnnotation,
             Register register
     ) {
         try {
+            if (!needAnnotation) {
+                return Arrays.stream(constructors)
+                        .parallel()
+                        .filter(constructor -> hasResolvableTypes(constructor.getParameterTypes(), register))
+                        .findFirst();
+            }
             return Arrays.stream(constructors)
                     .parallel()
                     .filter(constructor -> constructor.getAnnotation(ConstructorResolving.class) != null &&
@@ -215,6 +294,7 @@ public final class ConstructorResolver {
      * Check if all classes are a resolvable type.
      *
      * @param parameters classes that will be checked.
+     * @param register   Which registers need to be used to resolve the types of the constructors.
      *
      * @return If {@code true} all classes are a resolvable type.
      *
