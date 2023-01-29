@@ -565,7 +565,7 @@ public final class Register implements Cloneable, Comparable<Register> {
     @Override
     public int compareTo(@NotNull Register o) {
         return Comparator.comparing(Register::getPriority)
-                .thenComparing(register -> register.getTypeProviders().keySet().hashCode())
+                .thenComparing(System::identityHashCode)
                 .reversed()
                 .compare(this, o);
     }

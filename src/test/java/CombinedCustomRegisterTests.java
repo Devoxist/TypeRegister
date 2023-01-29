@@ -164,7 +164,16 @@ public class CombinedCustomRegisterTests {
     }
 
     @Test
-    public void checkIfGottenTypeSameType4() {
+    public void checkIfHasMultiple1() {
+        Register register = new Register();
+        Register register2 = new Register(register);
+        Register register1 = new Register(register2);
+
+        Assertions.assertEquals(3, register1.getRegistries().size());
+    }
+
+    @Test
+    public void checkIfHasMultiple2() {
         Register register = new Register();
         TestClass provider = new TestClass();
         register.register(TestClass.class, provider);
