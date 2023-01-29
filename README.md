@@ -17,7 +17,7 @@ Add this to your `pom.xml`.
 <dependency>
     <groupId>nl.devoxist</groupId>
     <artifactId>TypeRegister</artifactId>
-    <version>1.3.3</version>
+    <version>1.4.0</version>
 </dependency>
 ```
 
