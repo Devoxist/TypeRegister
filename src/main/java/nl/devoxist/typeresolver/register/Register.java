@@ -41,10 +41,10 @@ import java.util.function.Supplier;
  * used to create custom {@link Register}s.
  *
  * @author Dev-Bjorn
- * @version 1.3.3
+ * @version 1.4.1
  * @since 1.3.0
  */
-public final class Register implements Cloneable, Comparable<Register> {
+public class Register implements Cloneable, Comparable<Register> {
     /**
      * The map of the registered types with the corresponding {@link TypeProvider}.
      *

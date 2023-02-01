@@ -156,7 +156,8 @@ annotation `@ConstructorResolver`.
 
 #### Custom Registries
 
-How to create a custom registry? Construct a new `Register` object.
+How to create a custom registry? Construct a new `Register` object. Beside constructing the `Register`, it is also
+possible to override the `Register` to make custom functions and override the current functions of the `Register`. 
 
 ```java
 Register register = new Register();
