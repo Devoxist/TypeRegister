@@ -17,7 +17,7 @@ Add this to your `pom.xml`.
 <dependency>
     <groupId>nl.devoxist</groupId>
     <artifactId>TypeRegister</artifactId>
-    <version>1.4.0</version>
+    <version>1.5.0</version>
 </dependency>
 ```
 
@@ -78,8 +78,8 @@ how the custom types can be created.
 ```java 
 public static class CustomTypeProvider<T, P extends T> extends TypeProvider<T, CustomType<P>> {
 
-    public CustomTypeProvider(Class<T> type, CustomType<P> provider) {
-        super(type, provider);
+    public CustomTypeProvider(Class<T> typeCls, CustomType<P> provider) {
+        super(typeCls, provider);
     }
 
     @Override
@@ -100,6 +100,41 @@ How can this `CustomTypeProvider` be registered? Use the method `register(TypePr
 ```java
 TypeRegister.register(new CustomTypeProvider(TestClass.class, new CustomType<TestClass>()));
 ```
+
+##### Identifier Types
+
+How to create an identifier type. This can be done through a `TypeProviderBuilder` or register the
+`TypeKeyProvider`. In this example we use the `TypeProviderBuilder`. At first, we need to clarify which implementation
+of the builder is used in the consumer, in this instance it will be the `IdentifierBuilder`. The `IdentifierBuilder` has
+two generic parameters, a type and an identifier. Use the identifier parameter to define which identifier is expected.
+After that use the methods provided in the builder to build to `TypeProvider`. Do not use the
+`TypeProviderBuilder#buildProvider` is automatically done through the `Register`.
+
+```java
+register.register(Car.class, (IdentifiersBuilder<Car, Class<? extends Car>> settings) -> settings
+                        .addIdentifier(CarOne.class, new CarOne())
+                        .addIdentifier(CarTwo.class, new CarTwo())
+                 );
+```
+
+How to retrieve this identifier type of the register? This can be done through the `Register#getInitProvider`. Use this
+method which the settings and set the identifiers through the `setIdentifiers` method.
+
+```java
+ register.getInitProvider(Car.class, initProviderSettings -> initProviderSettings.setIdentifiers(CarOne.class));
+```
+
+#### InitProvider Settings
+
+##### All Registries
+
+Whether the search will go through all the provided registers in the construction of the `Register`. If this is false it
+will only will search to the used `Register`.
+
+##### Identifiers
+
+The identifier objects that the `TypeKeyProvider` or other key providers need to use, to choose which implementation it 
+will use. If not provided, and it needs an identifier, it will not find the implementation.
 
 #### Auto construct classes
 
@@ -141,8 +176,7 @@ TypeRegister.register(StaticType.class, new StaticType());
 After the type have been registered, it is possible to resolve the constructor.
 
 ```java 
-Example example=ConstructorResolver.initClass(Example.class);
-
+Example example = ConstructorResolver.initClass(Example.class);
 ```
 
 #### ConstructorResolver Options
@@ -153,6 +187,77 @@ Use the `ConstructorResolver#initClass` with the parameter needAnnotation. This 
 annotation `@ConstructorResolver` on the constructor. This will not sort the constructors on the priority and does not
 keep track of the use of the annotation `@ConstructorResolver`. The default of this option is that it needs the
 annotation `@ConstructorResolver`.
+
+##### Identifiers
+
+If there is a type with multiple implementations, like an interface with multiple implementations, it is possible to use
+an identifier which will resolve the correct implementation of the type. For example there is an exporter, which exports
+cars. There is a class that handles the car object, only it does not know which car it expects. Firstly we need to
+create the objects.
+
+```java
+// Exporter
+public record CarExporter(Car car) {
+    // PUT YOUR STUFF HERE
+}
+
+// Car
+public interface Car {
+    // PUT YOUR STUFF HERE
+}
+
+// Implementation 1
+public class CarOne implements Car {
+    // PUT YOUR STUFF HERE
+}
+
+// Implementation 2
+public class CarTwo implements Car {
+    // PUT YOUR STUFF HERE
+}
+```
+
+Secondly we need to register those objects. This can be done through a `TypeProviderBuilder` or register the
+`TypeProvider`. In this example we use the `TypeProviderBuilder`. At first, we need to clarify which implementation
+of the builder is used in the consumer, in this instance it will be the `IdentifierBuilder`. The `IdentifierBuilder` has
+two generic parameters, a type and an identifier. Use the identifier parameter to define which identifier is expected.
+After that use the methods provided in the builder to build to `TypeProvider`. Do not use the 
+`TypeProviderBuilder#buildProvider` is automatically done through the `Register`.
+
+```java
+register.register(Car.class, (IdentifiersBuilder<Car, Class<? extends Car>> settings) -> settings
+                        .addIdentifier(CarOne.class, new CarOne())
+                        .addIdentifier(CarTwo.class, new CarTwo())
+                 );
+```
+
+At last in use the ConstructorResolver with the settings consumer or use the builder like in the example below. Set the
+identifiers through the `setIdentifiers` method, in the consumer or the builder. The builder needs
+the `ConstructionSettingsBuilder#initClass` to initialize the class. The `ConstructorResolver#initClass` does the class
+initialization automatically.
+
+Method 1: 
+
+```java
+CarExporter carExporter = ConstructorResolver.constructClass(CarExporter.class)
+        .setNeedAnnotation(false)
+        .setIdentifiers(CarOneExporter.class)
+        .setRegisters(register)
+        .initClass();
+```
+
+Method 2:
+```java
+CarExporter carExporter2 = ConstructorResolver.initClass(CarExporter.class, constructionSettings -> {
+    constructionSettings.setNeedAnnotation(false);
+    constructionSettings.setIdentifiers(CarOneExporter.class);
+    constructionSettings.setRegisters(register);
+});
+```
+
+##### Others
+
+For custom registers see the paragraph `Custom Registries`.
 
 #### Custom Registries
 
@@ -189,10 +294,11 @@ Register register = new Register(RegisteryPriority.HIGHEST);
 Register secondRegister = new Register(register);
 ```
 
-These custom registries can also be used in the `ConstructorResolver`. Use the
-method `ConstructorResolver#initClass(Class<?>,Register...)` to choose which registries the resolver to use. If chosen
-register is `TypeRegister` use `TypeRegister#getRegister` and add this to the parameters. The default registry is
-the `TypeRegister`. This is automatically used if no registries are given.
+These custom registries can also be used in the `ConstructorResolver`. Use the method 
+`ConstructorResolver#initClass(Class<?>,Register...)`or `ConstructionSettings/ConstructionSettingsBuilder#setRegisters` 
+to choose which registries the resolver to use. If chosen register is `TypeRegister` use `TypeRegister#getRegister` and 
+add this to the parameters. The default registry is the `TypeRegister`. This is automatically used if no registries are 
+given.
 
 ##### Full Example
 

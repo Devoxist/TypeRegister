@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Devoxist, Dev-Bjorn
+ * Copyright (c) 2023 Devoxist, Dev-Bjorn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,13 +20,14 @@
  * SOFTWARE.
  */
 
+package nl.devoxist.typeresolver.constructor;
+
 import nl.devoxist.typeresolver.TypeRegister;
-import nl.devoxist.typeresolver.constructor.ConstructorPriority;
-import nl.devoxist.typeresolver.constructor.ConstructorResolver;
-import nl.devoxist.typeresolver.constructor.ConstructorResolving;
 import nl.devoxist.typeresolver.providers.TypeProvider;
+import nl.devoxist.typeresolver.providers.builders.IdentifiersBuilder;
 import nl.devoxist.typeresolver.register.Register;
 import nl.devoxist.typeresolver.register.RegisterPriority;
+import nl.devoxist.typeresolver.settings.ConstructionSettings;
 import org.jetbrains.annotations.Contract;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -168,6 +169,153 @@ public class ConstructorResolverTests {
         Assertions.assertEquals(provider1, testCls2.testClass);
     }
 
+    @Test
+    public void checkIfConstructionIsCorrectInitialized9()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        Register register1 = new Register(RegisterPriority.HIGHEST);
+        TestClass provider1 = new TestClass(2);
+        register1.register(TestClass.class, provider1);
+
+        ConstructionClass2 testCls2 = ConstructorResolver.constructClass(ConstructionClass2.class)
+                .setNeedAnnotation(false)
+                .setRegisters(register1)
+                .initClass();
+
+        Assertions.assertEquals(provider1, testCls2.testClass);
+    }
+
+    @Test
+    public void checkIfConstructionIsCorrectInitialized10()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        TestClass provider1 = new TestClass(2);
+        TypeRegister.register(TestClass.class, provider1);
+
+        ConstructionClass2 testCls2 =
+                ConstructorResolver.constructClass(ConstructionClass2.class).setNeedAnnotation(false).initClass();
+
+        Assertions.assertEquals(provider1, testCls2.testClass);
+        TypeRegister.unregister(TestClass.class);
+    }
+
+    @Test
+    public void checkIfConstructionIsCorrectInitialized11()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        CarOneExporter carOneExporter = new CarOneExporter();
+        CarTwoExporter carTwoExporter = new CarTwoExporter();
+        TypeRegister.register(
+                Exporter.class,
+                (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
+                        .addIdentifier(CarOneExporter.class, carOneExporter)
+                        .addIdentifier(CarTwoExporter.class, carTwoExporter)
+        );
+
+        CarExporter carExporter1 = ConstructorResolver.constructClass(CarExporter.class)
+                .setNeedAnnotation(false)
+                .setIdentifiers(CarOneExporter.class)
+                .initClass();
+
+
+        CarExporter carExporter2 = ConstructorResolver.constructClass(CarExporter.class)
+                .setNeedAnnotation(false)
+                .setIdentifiers(CarTwoExporter.class)
+                .initClass();
+
+
+        Assertions.assertEquals(carOneExporter, carExporter1.exporter);
+        Assertions.assertEquals(carTwoExporter, carExporter2.exporter);
+        TypeRegister.unregister(Exporter.class);
+    }
+
+    @Test
+    public void checkIfConstructionIsCorrectInitialized12()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        Register register = new Register(RegisterPriority.HIGHEST);
+        CarOneExporter carOneExporter = new CarOneExporter();
+        CarTwoExporter carTwoExporter = new CarTwoExporter();
+
+        register.register(
+                Exporter.class,
+                (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
+                        .addIdentifier(CarOneExporter.class, carOneExporter)
+                        .addIdentifier(CarTwoExporter.class, carTwoExporter)
+        );
+
+        CarExporter carExporter1 = ConstructorResolver.constructClass(CarExporter.class)
+                .setNeedAnnotation(false)
+                .setIdentifiers(CarOneExporter.class)
+                .setRegisters(register)
+                .initClass();
+
+        CarExporter carExporter2 = ConstructorResolver.constructClass(CarExporter.class)
+                .setNeedAnnotation(false)
+                .setIdentifiers(CarTwoExporter.class)
+                .setRegisters(register)
+                .initClass();
+
+        Assertions.assertEquals(carOneExporter, carExporter1.exporter);
+        Assertions.assertEquals(carTwoExporter, carExporter2.exporter);
+    }
+
+    @Test
+    public void checkIfConstructionIsCorrectInitialized13()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        Register register = new Register(RegisterPriority.HIGHEST);
+        CarOneExporter carOneExporter = new CarOneExporter();
+        CarTwoExporter carTwoExporter = new CarTwoExporter();
+
+        register.register(
+                Exporter.class,
+                (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
+                        .addIdentifier(CarOneExporter.class, carOneExporter)
+                        .addIdentifier(CarTwoExporter.class, carTwoExporter)
+        );
+
+        CarExporter carExporter1 = ConstructorResolver.initClass(CarExporter.class, constructionSettings -> {
+            constructionSettings.setNeedAnnotation(false);
+            constructionSettings.setRegisters(register);
+            constructionSettings.setIdentifiers(CarOneExporter.class);
+        });
+
+        CarExporter carExporter2 = ConstructorResolver.initClass(CarExporter.class, constructionSettings -> {
+            constructionSettings.setNeedAnnotation(false);
+            constructionSettings.setRegisters(register);
+            constructionSettings.setIdentifiers(CarTwoExporter.class);
+        });
+
+        Assertions.assertEquals(carOneExporter, carExporter1.exporter);
+        Assertions.assertEquals(carTwoExporter, carExporter2.exporter);
+    }
+
+    @Test
+    public void checkIfConstructionIsCorrectInitialized14()
+            throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        Register register = new Register(RegisterPriority.HIGHEST);
+        CarOneExporter carOneExporter = new CarOneExporter();
+        CarTwoExporter carTwoExporter = new CarTwoExporter();
+
+        register.register(
+                Exporter.class,
+                (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
+                        .addIdentifier(CarOneExporter.class, carOneExporter)
+                        .addIdentifier(CarTwoExporter.class, carTwoExporter)
+        );
+
+        ConstructionSettings constructionSettings = new ConstructionSettings();
+        constructionSettings.setNeedAnnotation(false);
+        constructionSettings.setRegisters(register);
+        constructionSettings.setIdentifiers(CarOneExporter.class);
+
+        CarExporter carExporter1 = ConstructorResolver.initClass(CarExporter.class, constructionSettings);
+
+        constructionSettings.setIdentifiers(CarTwoExporter.class);
+
+        CarExporter carExporter2 = ConstructorResolver.initClass(CarExporter.class, constructionSettings);
+
+        Assertions.assertEquals(carOneExporter, carExporter1.exporter);
+        Assertions.assertEquals(carTwoExporter, carExporter2.exporter);
+    }
+
+
     public static class TestClass {
         public int i;
 
@@ -242,8 +390,8 @@ public class ConstructorResolverTests {
 
     public static class CustomTypeProvider<T, P extends T> extends TypeProvider<T, CustomType<P>> {
 
-        public CustomTypeProvider(Class<T> type, CustomType<P> provider) {
-            super(type, provider);
+        public CustomTypeProvider(Class<T> typeCls, CustomType<P> provider) {
+            super(typeCls, provider);
         }
 
         @Override
@@ -255,6 +403,20 @@ public class ConstructorResolverTests {
 
     public static class CustomType<P> {
         private P type;
+    }
+
+    public record CarExporter(Exporter exporter) {
+    }
+
+    public interface Exporter {
+
+    }
+
+    public static class CarTwoExporter implements Exporter {
+
+    }
+
+    public static class CarOneExporter implements Exporter {
     }
 
 }

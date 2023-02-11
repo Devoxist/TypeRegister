@@ -23,17 +23,26 @@
 package nl.devoxist.typeresolver.register;
 
 import nl.devoxist.typeresolver.collection.MergeSets;
+import nl.devoxist.typeresolver.constructor.ConstructorResolver;
+import nl.devoxist.typeresolver.exception.ProviderException;
 import nl.devoxist.typeresolver.exception.RegisterException;
+import nl.devoxist.typeresolver.functions.SerializableConsumer;
+import nl.devoxist.typeresolver.functions.SerializableSupplier;
+import nl.devoxist.typeresolver.providers.TypeKeyProvider;
 import nl.devoxist.typeresolver.providers.TypeObjectProvider;
 import nl.devoxist.typeresolver.providers.TypeProvider;
 import nl.devoxist.typeresolver.providers.TypeSupplierProvider;
-import nl.devoxist.typeresolver.supplier.SerializableSupplier;
+import nl.devoxist.typeresolver.providers.builders.TypeProviderBuilder;
+import nl.devoxist.typeresolver.settings.InitProviderSettings;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -41,7 +50,7 @@ import java.util.function.Supplier;
  * used to create custom {@link Register}s.
  *
  * @author Dev-Bjorn
- * @version 1.4.1
+ * @version 1.5.0
  * @since 1.3.0
  */
 public class Register implements Cloneable, Comparable<Register> {
@@ -116,7 +125,8 @@ public class Register implements Cloneable, Comparable<Register> {
         this.priority = priority;
 
         Supplier<Set<Register>> setSupplier = TreeSet::new;
-        this.registers = MergeSets.mergeSets(new TreeSet<>(List.of(registers)), Register::getRegistries, setSupplier);
+        this.registers =
+                MergeSets.mergeSets(new TreeSet<>(Arrays.asList(registers)), Register::getRegistries, setSupplier);
         this.registers.add(this);
     }
 
@@ -163,7 +173,7 @@ public class Register implements Cloneable, Comparable<Register> {
      * Register a type with a {@link Supplier} provider.The registering of a {@link TypeProvider} causes a link to
      * appear in this {@link Register}. The registration of an object can only be taken place in this {@link Register}.
      *
-     * @param type     The type which is going to be registered and linked to the provider.
+     * @param typeCls  The type which is going to be registered and linked to the provider.
      * @param provider The {@link Supplier} provider of the type which is going to be registered and linked to the type.
      * @param <T>      type of the type which is going to be registered.
      * @param <P>      type of the {@link Supplier} provider which is going to be registered.
@@ -174,16 +184,15 @@ public class Register implements Cloneable, Comparable<Register> {
      * @since 1.3.0
      */
     public <T, P extends T> boolean register(
-            @NotNull Class<T> type,
-            @NotNull SerializableSupplier<P> provider
+            @NotNull Class<T> typeCls, @NotNull SerializableSupplier<P> provider
     ) {
         Class<?> typeOfSupplier = provider.getSupplierClass();
 
-        if (!type.isAssignableFrom(typeOfSupplier)) {
+        if (!typeCls.isAssignableFrom(typeOfSupplier)) {
             throw new RegisterException("The type is not assignable from the provider.");
         }
 
-        TypeProvider<T, ?> typeProvider = new TypeSupplierProvider<>(type, provider);
+        TypeProvider<T, ?> typeProvider = new TypeSupplierProvider<>(typeCls, provider);
 
         return this.register(typeProvider);
     }
@@ -192,7 +201,7 @@ public class Register implements Cloneable, Comparable<Register> {
      * Register a type with a provider. The registering of a {@link TypeProvider} causes a link to appear in this
      * {@link Register}. The registration of an object can only be taken place in this {@link Register}.
      *
-     * @param type     The type which is going to be registered and linked to the provider.
+     * @param typeCls  The type which is going to be registered and linked to the provider.
      * @param provider The provider of the type which is going to be registered and linked to the type.
      * @param <T>      type of the type which is going to be registered.
      * @param <P>      type of the provider which is going to be registered.
@@ -203,14 +212,14 @@ public class Register implements Cloneable, Comparable<Register> {
      * @since 1.3.0
      */
     @SuppressWarnings("unchecked")
-    public <T, P> boolean register(@NotNull Class<T> type, @NotNull P provider) {
+    public <T, P> boolean register(@NotNull Class<T> typeCls, @NotNull P provider) {
         Class<?> typeOfProvider = provider.getClass();
 
-        if (!type.isAssignableFrom(typeOfProvider)) {
+        if (!typeCls.isAssignableFrom(typeOfProvider)) {
             throw new RegisterException("The type is not assignable from the provider.");
         }
 
-        TypeProvider<T, ?> typeProvider = new TypeObjectProvider<>(type, (T) provider);
+        TypeProvider<T, ?> typeProvider = new TypeObjectProvider<>(typeCls, (T) provider);
 
         return this.register(typeProvider);
     }
@@ -228,10 +237,52 @@ public class Register implements Cloneable, Comparable<Register> {
      *
      * @since 1.3.0
      */
-    public <T, P> boolean register(
-            TypeProvider<T, P> typeProvider
-    ) {
+    public <T, P> boolean register(TypeProvider<T, P> typeProvider) {
         return typeProviders.putIfAbsent(typeProvider.getType(), typeProvider) == null;
+    }
+
+    /**
+     * Register or update a type with a provider, that has been build by a {@link TypeProviderBuilder}.
+     *
+     * @param typeCls         The type which is going to be registered and linked to the provider.
+     * @param builderConsumer The {@link Consumer} of the builder. A builder is a chain-edit
+     * @param <T>             type of the type which is going to be registered.
+     * @param <X>             type of the builder which is going to build the {@link TypeProvider}.
+     *
+     * @return if {@code true} the type with the build provider is registered.
+     *
+     * @throws RegisterException If the consumer is an abstract type, or if there is no valid constructor, or if a
+     *                           matching method is not found, or if the underlying constructor throws an exception, or
+     *                           if the class that declares the underlying constructor represents an abstract class, or
+     *                           if this Constructor object is enforcing Java language access control and the underlying
+     *                           constructor is inaccessible.
+     * @see TypeProviderBuilder
+     * @since 1.5.0
+     */
+    public <T, X extends TypeProviderBuilder<T>> boolean register(
+            @NotNull Class<T> typeCls,
+            @NotNull SerializableConsumer<X> builderConsumer
+    ) {
+        Class<X> consumerCls = builderConsumer.getConsumerCls();
+
+        if ((consumerCls.getModifiers() & Modifier.ABSTRACT) != 0) {
+            throw new RegisterException(
+                    "The consumer is an abstract type, which cannot be used in any from of registration.");
+        }
+
+        X typeProviderBuilder;
+        try {
+            typeProviderBuilder = ConstructorResolver.initClass(consumerCls, false);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException |
+                 IllegalAccessException e) {
+            throw new RegisterException(e);
+        }
+
+        builderConsumer.accept(typeProviderBuilder);
+
+        TypeProvider<T, ?> provider = typeProviderBuilder.buildProvider(typeCls);
+
+        return this.register(provider);
     }
 
     /**
@@ -248,9 +299,7 @@ public class Register implements Cloneable, Comparable<Register> {
      * @throws RegisterException If the type is not registered.
      * @since 1.3.0
      */
-    public <T, P> void unregister(
-            @NotNull TypeProvider<T, P> typeProvider
-    ) {
+    public <T, P> void unregister(@NotNull TypeProvider<T, P> typeProvider) {
         Class<T> type = typeProvider.getType();
         this.unregister(type);
     }
@@ -259,42 +308,40 @@ public class Register implements Cloneable, Comparable<Register> {
      * Unregister a type by its type. Unregistering a {@link TypeProvider} causes the link to disappear between the type
      * and provider in this {@link Register}. Only this register can be used to unregister a type.
      *
-     * @param type The type which is going to be unregistered.
-     * @param <T>  type of the type which is going to be unregistered.
+     * @param typeCls The type which is going to be unregistered.
+     * @param <T>     type of the type which is going to be unregistered.
      *
      * @throws RegisterException If the type is not registered.
      * @since 1.3.0
      */
-    public <T> void unregister(
-            Class<T> type
-    ) {
-        if (!this.hasProvider(type)) {
-            throw new RegisterException("'%s' is not registered.".formatted(type.getName()));
+    public <T> void unregister(Class<T> typeCls) {
+        if (!this.hasProvider(typeCls)) {
+            throw new RegisterException("'%s' is not registered.".formatted(typeCls.getName()));
         }
 
-        typeProviders.remove(type);
+        typeProviders.remove(typeCls);
     }
 
 
     /**
      * Check if the type is registered. The check is done over this {@link Register}.
      *
-     * @param type The type to check, if there is a link with any registered provider ({@link TypeProvider}).
-     * @param <T>  type of the type to check.
+     * @param typeCls The type to check, if there is a link with any registered provider ({@link TypeProvider}).
+     * @param <T>     type of the type to check.
      *
      * @return If {@code true} the type is registered.
      *
      * @since 1.3.0
      */
     @Contract(pure = true)
-    public <T> boolean hasProvider(Class<T> type) {
-        return this.hasProvider(type, false);
+    public <T> boolean hasProvider(Class<T> typeCls) {
+        return this.hasProvider(typeCls, false);
     }
 
     /**
      * Check if the type is registered. The check can be done over all the provided registers.
      *
-     * @param type         The type to check, if there is a link with any registered provider ({@link TypeProvider}).
+     * @param typeCls      The type to check, if there is a link with any registered provider ({@link TypeProvider}).
      * @param allRegisters If {@code true} it type is checked through all the provided registers from the construction
      *                     of the class ({@link #registers}). Otherwise, it only checks this {@link Register}.
      * @param <T>          type of the type to check.
@@ -304,8 +351,8 @@ public class Register implements Cloneable, Comparable<Register> {
      * @since 1.3.0
      */
     @Contract(pure = true)
-    public <T> boolean hasProvider(Class<T> type, boolean allRegisters) {
-        return allRegisters ? this.searchRegisters(type) != null : typeProviders.containsKey(type);
+    public <T> boolean hasProvider(Class<T> typeCls, boolean allRegisters) {
+        return allRegisters ? this.searchRegisters(typeCls) != null : typeProviders.containsKey(typeCls);
     }
 
     /**
@@ -313,17 +360,17 @@ public class Register implements Cloneable, Comparable<Register> {
      * {@link TypeProvider#getProvider()} in a custom {@link TypeProvider}. The search is completed through the
      * current {@link Register}.
      *
-     * @param type The type to search the link from between the provider ({@link TypeProvider}).
-     * @param <T>  type of the type to search the link from.
-     * @param <P>  type of the provider which has been searched and linked to the type ({@link TypeProvider}).
+     * @param typeCls The type to search the link from between the provider ({@link TypeProvider}).
+     * @param <T>     type of the type to search the link from.
+     * @param <P>     type of the provider which has been searched and linked to the type ({@link TypeProvider}).
      *
      * @return The provider which has been searched by its type.
      *
      * @throws RegisterException If the provider is not registered.
      * @since 1.3.0
      */
-    public <T, P> @NotNull P getProviderByType(Class<T> type) {
-        return this.getProviderByType(type, false);
+    public <T, P> @NotNull P getProviderByType(Class<T> typeCls) {
+        return this.getProviderByType(typeCls, false);
     }
 
     /**
@@ -331,7 +378,7 @@ public class Register implements Cloneable, Comparable<Register> {
      * {@link TypeProvider#getProvider()} in a custom {@link TypeProvider}. The search can be done through all
      * provided registers ({@link #registers}).
      *
-     * @param type         The type to search the link from between the provider ({@link TypeProvider}).
+     * @param typeCls      The type to search the link from between the provider ({@link TypeProvider}).
      * @param allRegisters If {@code true} it search through all the provided registers from the construction of the
      *                     class ({@link #registers}). Otherwise, it only searches through this {@link Register}.
      * @param <T>          type of the type to search the link from.
@@ -343,45 +390,83 @@ public class Register implements Cloneable, Comparable<Register> {
      * @since 1.3.0
      */
     @SuppressWarnings("unchecked")
-    public <T, P> @NotNull P getProviderByType(Class<T> type, boolean allRegisters) {
-        TypeProvider<T, ?> typeProvider = this.findTypeProvider(type, allRegisters);
+    public <T, P> @NotNull P getProviderByType(Class<T> typeCls, boolean allRegisters) {
+        TypeProvider<T, ?> typeProvider = this.findTypeProvider(typeCls, allRegisters);
         return (P) typeProvider.getProvider();
     }
 
     /**
      * Search and get the initialized provider. A way to create a custom implementation is to override the
-     * {@link TypeProvider#getInitProvider()} in a custom {@link TypeProvider}. The search is completed through the
-     * current {@link Register}.
+     * {@link TypeProvider#getInitProvider()} in a custom {@link TypeProvider}. The search is completed
+     * through
+     * the current {@link Register}.
      *
-     * @param type The type to search the link from between the provider ({@link TypeProvider}).
-     * @param <T>  type of the type to search the link from.
+     * @param typeCls The type to search the link from between the provider ({@link TypeProvider}).
+     * @param <T>     type of the type to search the link from.
      *
-     * @return The initialized provider which has been searched by its type.
+     * @return The initialized provider which has been searched by its type. This will return the output of the
+     * {@link TypeProvider#getInitProvider()}.
      *
      * @throws RegisterException If the provider is not registered.
      * @since 1.3.0
      */
-    public <T> @NotNull T getInitProvider(Class<T> type) {
-        return this.getInitProvider(type, false);
+    public <T> @NotNull T getInitProvider(Class<T> typeCls) {
+        return this.getInitProvider(typeCls, false);
     }
 
     /**
      * Search and get the initialized provider. A way to create a custom implementation is to override the
-     * {@link TypeProvider#getInitProvider()} in a custom {@link TypeProvider}. The search can be done through all
-     * provided registers ({@link #registers}).
+     * {@link TypeProvider#getInitProvider()} in a custom {@link TypeProvider}. The search can be done
+     * through all provided registers ({@link #registers}).
      *
-     * @param type         The type to search the link from between the provider ({@link TypeProvider}).
+     * @param typeCls      The type to search the link from between the provider ({@link TypeProvider}).
      * @param allRegisters If {@code true} it search through all the provided registers from the construction of the
      *                     class ({@link #registers}). Otherwise, it only searches through this {@link Register}.
      * @param <T>          type of the type to search the link from.
      *
-     * @return The initialized provider which has been searched by its type.
+     * @return The initialized provider which has been searched by its type. This will return the output of the
+     * {@link TypeProvider#getInitProvider()}.
      *
      * @throws RegisterException If the provider is not registered.
      * @since 1.3.0
      */
-    public <T> @NotNull T getInitProvider(Class<T> type, boolean allRegisters) {
-        TypeProvider<T, ?> typeProvider = this.findTypeProvider(type, allRegisters);
+    public <T> @NotNull T getInitProvider(Class<T> typeCls, boolean allRegisters) {
+        TypeProvider<T, ?> typeProvider = this.findTypeProvider(typeCls, allRegisters);
+
+        return typeProvider.getInitProvider();
+    }
+
+    /**
+     * Search and get the initialized provider. A way to create a custom implementation is to override the
+     * {@link TypeProvider#getInitProvider()} in a custom {@link TypeProvider}. The search can be done
+     * through all provided registers ({@link #registers}).
+     *
+     * @param typeCls                  The type to search the link from between the provider ({@link TypeProvider}).
+     * @param providerSettingsConsumer The settings that will manipulate the search of the {@link TypeProvider}.
+     * @param <T>                      type of the type to search the link from.
+     *
+     * @return The initialized provider which has been searched by its type. This will return the output of the
+     * {@link TypeProvider#getInitProvider()}.
+     *
+     * @throws RegisterException If the provider is not registered.
+     * @throws ProviderException If the identifiers is null or empty, or if the identifier is not registered.
+     * @since 1.5.0
+     */
+    @SuppressWarnings("unchecked")
+    public <T> @NotNull T getInitProvider(
+            Class<T> typeCls,
+            @NotNull Consumer<InitProviderSettings> providerSettingsConsumer
+    ) {
+        InitProviderSettings initProviderSettings = new InitProviderSettings();
+        providerSettingsConsumer.accept(initProviderSettings);
+
+        TypeProvider<T, ?> typeProvider = this.findTypeProvider(typeCls, initProviderSettings.useAllRegisters());
+
+        if (typeProvider instanceof TypeKeyProvider<?, ?> typeKeyProvider) {
+            Object[] identifiers = initProviderSettings.getIdentifiers();
+            typeProvider = (TypeProvider<T, ?>) typeKeyProvider.applyIdentifiers(identifiers);
+        }
+
         return typeProvider.getInitProvider();
     }
 
@@ -389,7 +474,7 @@ public class Register implements Cloneable, Comparable<Register> {
      * Search and get the {@link TypeProvider} of the type. The search can be done through all
      * provided registers ({@link #registers}).
      *
-     * @param type         The type to search the link from between the provider ({@link TypeProvider}).
+     * @param typeCls      The type to search the link from between the provider ({@link TypeProvider}).
      * @param allRegisters If {@code true} it search through all the provided registers from the construction of the
      *                     class ({@link #registers}). Otherwise, it only searches through this {@link Register}.
      * @param <T>          type of the type to search the link from.
@@ -401,17 +486,17 @@ public class Register implements Cloneable, Comparable<Register> {
      */
     @NotNull
     @SuppressWarnings("unchecked")
-    private <T> TypeProvider<T, ?> findTypeProvider(Class<T> type, boolean allRegisters) {
+    private <T> TypeProvider<T, ?> findTypeProvider(Class<T> typeCls, boolean allRegisters) {
         TypeProvider<T, ?> typeProvider;
 
         if (allRegisters) {
-            typeProvider = searchRegisters(type);
+            typeProvider = searchRegisters(typeCls);
         } else {
-            typeProvider = (TypeProvider<T, ?>) typeProviders.get(type);
+            typeProvider = (TypeProvider<T, ?>) typeProviders.get(typeCls);
         }
 
         if (typeProvider == null) {
-            throw new RegisterException("The provider of '%s' is not registered.".formatted(type.getName()));
+            throw new RegisterException("The provider of '%s' is not registered.".formatted(typeCls.getName()));
         }
 
         return typeProvider;
@@ -420,15 +505,15 @@ public class Register implements Cloneable, Comparable<Register> {
     /**
      * Search and get the {@link TypeProvider} of the {@link Register} with the highest priority containing the type.
      *
-     * @param type The type to search the link from between the provider ({@link TypeProvider}).
-     * @param <T>  type of the type to search the link from.
+     * @param typeCls The type to search the link from between the provider ({@link TypeProvider}).
+     * @param <T>     type of the type to search the link from.
      *
      * @return The {@link TypeProvider} of the type. If {@code null} the type is not registered or an exception was thrown.
      *
      * @since 1.3.0
      */
-    private <T> @Nullable TypeProvider<T, ?> searchRegisters(Class<T> type) {
-        return RegisterSearch.searchRegisters(registers, type);
+    private <T> @Nullable TypeProvider<T, ?> searchRegisters(Class<T> typeCls) {
+        return RegisterSearch.searchRegisters(registers, typeCls);
     }
 
     /**

@@ -26,7 +26,7 @@ import nl.devoxist.typeresolver.constructor.ConstructorResolving;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class Main {
+public class CustomRegisterExample {
 
     public static void main(String[] args)
             throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {

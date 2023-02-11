@@ -34,7 +34,7 @@ import java.util.function.Supplier;
  * @param <P> The type of the provider.
  *
  * @author Dev-Bjorn
- * @version 1.2.0
+ * @version 1.5.0
  * @since 1.0.0
  */
 public abstract class TypeProvider<T, P> {
@@ -43,7 +43,7 @@ public abstract class TypeProvider<T, P> {
      *
      * @since 1.1.0
      */
-    private final Class<T> type;
+    private final Class<T> typeCls;
 
     /**
      * The provided object of the type.
@@ -55,13 +55,13 @@ public abstract class TypeProvider<T, P> {
     /**
      * Construct a new {@link TypeProvider} object. This links a type to an object.
      *
-     * @param type     The type of the provider
+     * @param typeCls  The class or interface that is representing the type of this {@link TypeProvider}.
      * @param provider The provided object of the type.
      *
      * @since 1.1.0
      */
-    public TypeProvider(@NotNull Class<T> type, @NotNull P provider) {
-        this.type = type;
+    public TypeProvider(@NotNull Class<T> typeCls, @NotNull P provider) {
+        this.typeCls = typeCls;
         this.provider = provider;
     }
 
@@ -73,7 +73,7 @@ public abstract class TypeProvider<T, P> {
      * @since 1.1.0
      */
     public Class<T> getType() {
-        return type;
+        return typeCls;
     }
 
     /**
@@ -162,7 +162,7 @@ public abstract class TypeProvider<T, P> {
             return false;
         }
         var that = (TypeProvider<?, ?>) obj;
-        return Objects.equals(this.type, that.type) &&
+        return Objects.equals(this.typeCls, that.typeCls) &&
                Objects.equals(this.provider, that.provider);
     }
 
@@ -201,7 +201,7 @@ public abstract class TypeProvider<T, P> {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(type, provider);
+        return Objects.hash(typeCls, provider);
     }
 
     /**
@@ -232,7 +232,7 @@ public abstract class TypeProvider<T, P> {
     @Override
     public String toString() {
         return "TypeProvider[" +
-               "type=" + type + ", " +
+               "type=" + typeCls + ", " +
                "provider=" + provider + ']';
     }
 }

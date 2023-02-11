@@ -20,46 +20,26 @@
  * SOFTWARE.
  */
 
-package nl.devoxist.typeresolver.providers;
+package nl.devoxist.typeresolver.typeproviders;
 
-import org.jetbrains.annotations.NotNull;
+import nl.devoxist.typeresolver.providers.TypeObjectProvider;
+import nl.devoxist.typeresolver.providers.TypeProvider;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.util.function.Supplier;
+public class TypeObjectProviderTest {
 
-/**
- * {@link TypeSupplierProvider} is a subclass of {@link TypeProvider} and it links a type with an {@link Object}.
- *
- * @param <T> The type of the type.
- * @param <P> The type of the {@link Supplier} provider.
- *
- * @author Dev-Bjorn
- * @version 1.5.0
- * @since 1.1.0
- */
-public final class TypeObjectProvider<T, P extends T> extends TypeProvider<T, P> {
+    @Test
+    public void constructionTest() {
+        TestClass testClass = new TestClass();
+        TypeProvider<TestClass, TestClass> provider = new TypeObjectProvider<>(TestClass.class, testClass);
 
-    /**
-     * Construct a type provider object. This object holds the static object and the type.
-     *
-     * @param typeCls  type of the provider
-     * @param provider The provider of the type.
-     *
-     * @since 1.1.0
-     */
-    public TypeObjectProvider(@NotNull Class<T> typeCls, @NotNull P provider) {
-        super(typeCls, provider);
+        Assertions.assertEquals(TestClass.class, provider.getType());
+        Assertions.assertEquals(testClass, provider.getProvider());
+        Assertions.assertEquals(testClass, provider.getInitProvider());
     }
 
-    /**
-     * Get the initiated object of the provider. For example a {@link Supplier} returns the {@link Supplier#get()}.
-     *
-     * @return The initiated object of the provider.
-     *
-     * @since 1.1.0
-     */
-    @Override
-    public T getInitProvider() {
-        return getProvider();
-    }
+    public static class TestClass {
 
+    }
 }

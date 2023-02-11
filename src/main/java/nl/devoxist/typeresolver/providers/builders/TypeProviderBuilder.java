@@ -20,45 +20,31 @@
  * SOFTWARE.
  */
 
-package nl.devoxist.typeresolver.providers;
+package nl.devoxist.typeresolver.providers.builders;
 
+import nl.devoxist.typeresolver.providers.TypeProvider;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Supplier;
-
 /**
- * {@link TypeSupplierProvider} is a subclass of {@link TypeProvider} and it links a type with a {@link Supplier}.
+ * {@link TypeProviderBuilder} is the superclass of those {@link TypeProviderBuilder} which will chain-edit the current
+ * {@link TypeProvider}.
  *
- * @param <T> The type of the type.
- * @param <P> The type of the {@link Supplier} provider.
+ * @param <T> The type that is representing the type of the {@link TypeProvider}.
  *
  * @author Dev-Bjorn
  * @version 1.5.0
- * @since 1.1.0
+ * @since 1.5.0
  */
-public final class TypeSupplierProvider<T, P extends T> extends TypeProvider<T, Supplier<P>> {
+public sealed abstract class TypeProviderBuilder<T> permits IdentifiersBuilder {
 
     /**
-     * Construct a {@link TypeProvider} object. This object holds the {@link Supplier} object and the type.
+     * Build the {@link TypeProvider} of chain-edited {@link TypeProvider}.
      *
-     * @param typeCls  The class or interface that is representing the type of this {@link TypeProvider}.
-     * @param provider the provider class
+     * @param typeCls The class or interface that is representing the type of this {@link TypeProvider}.
      *
-     * @since 1.1.0
+     * @return The build {@link TypeProvider}
+     *
+     * @since 1.5.0
      */
-    public TypeSupplierProvider(@NotNull Class<T> typeCls, @NotNull Supplier<P> provider) {
-        super(typeCls, provider);
-    }
-
-    /**
-     * Get the initiated object of the provider. For example a {@link Supplier} returns the {@link Supplier#get()}.
-     *
-     * @return The initiated object of the provider.
-     *
-     * @since 1.1.0
-     */
-    @Override
-    public T getInitProvider() {
-        return getProvider().get();
-    }
+    public abstract @NotNull TypeProvider<T, ?> buildProvider(Class<T> typeCls);
 }

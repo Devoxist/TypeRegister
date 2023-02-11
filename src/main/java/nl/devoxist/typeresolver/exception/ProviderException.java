@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Devoxist, Dev-Bjorn
+ * Copyright (c) 2023 Devoxist, Dev-Bjorn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,30 +22,29 @@
 
 package nl.devoxist.typeresolver.exception;
 
-import java.io.Serial;
+import nl.devoxist.typeresolver.providers.TypeProvider;
 
 /**
- * {@link ConstructorException} can be thrown during the construction of an object. These include:
+ * {@link ProviderException} can be thrown during the building of a provider. These include:
  * <ul>
- * <li>When no constructor can be found.</li>
+ * <li>When the {@link TypeProvider#getInitProvider()} does not meet the conditions.</li>
+ * <li>The provider can not be build, because of an unknown object.</li>
  * </ul>
  *
  * @author Dev-Bjorn
- * @version 1.2.0
- * @since 1.0.0
+ * @version 1.5.0
+ * @since 1.5.0
  */
-public class ConstructorException extends RuntimeException {
-    @Serial
-    private static final long serialVersionUID = 8998339275499949657L;
+public class ProviderException extends RuntimeException {
 
     /**
      * Constructs a new runtime exception with {@code null} as its
      * detail message.  The cause is not initialized, and may subsequently be
      * initialized by a call to {@link #initCause}.
      *
-     * @since 1.0.0
+     * @since 1.5.0
      */
-    public ConstructorException() {
+    public ProviderException() {
     }
 
     /**
@@ -56,9 +55,9 @@ public class ConstructorException extends RuntimeException {
      * @param message The detail message. The detail message is saved for
      *                later retrieval by the {@link #getMessage()} method.
      *
-     * @since 1.0.0
+     * @since 1.5.0
      */
-    public ConstructorException(String message) {
+    public ProviderException(String message) {
         super(message);
     }
 
@@ -75,9 +74,9 @@ public class ConstructorException extends RuntimeException {
      *                permitted, and indicates that the cause is nonexistent or
      *                unknown.)
      *
-     * @since 1.0.0
+     * @since 1.5.0
      */
-    public ConstructorException(String message, Throwable cause) {
+    public ProviderException(String message, Throwable cause) {
         super(message, cause);
     }
 
@@ -93,9 +92,9 @@ public class ConstructorException extends RuntimeException {
      *              permitted, and indicates that the cause is nonexistent or
      *              unknown.)
      *
-     * @since 1.0.0
+     * @since 1.5.0
      */
-    public ConstructorException(Throwable cause) {
+    public ProviderException(Throwable cause) {
         super(cause);
     }
 
@@ -105,21 +104,16 @@ public class ConstructorException extends RuntimeException {
      * stack trace enabled or disabled.
      *
      * @param message            The detail message.
-     * @param cause              The cause.  (A {@code null} value is permitted,
+     * @param cause              The cause. (A {@code null} value is permitted,
      *                           and indicates that the cause is nonexistent or unknown.)
      * @param enableSuppression  Whether suppression is enabled
      *                           or disabled
      * @param writableStackTrace Whether the stack trace should
      *                           be writable
      *
-     * @since 1.0.0
+     * @since 1.5.0
      */
-    public ConstructorException(
-            String message,
-            Throwable cause,
-            boolean enableSuppression,
-            boolean writableStackTrace
-    ) {
+    public ProviderException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

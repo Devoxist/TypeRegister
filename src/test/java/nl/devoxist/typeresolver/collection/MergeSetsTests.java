@@ -20,7 +20,8 @@
  * SOFTWARE.
  */
 
-import nl.devoxist.typeresolver.collection.MergeSets;
+package nl.devoxist.typeresolver.collection;
+
 import nl.devoxist.typeresolver.register.Register;
 import nl.devoxist.typeresolver.register.RegisterPriority;
 import org.junit.jupiter.api.Assertions;
@@ -178,10 +179,7 @@ public class MergeSetsTests {
         checkableSet.add(register3);
         checkableSet.add(register4);
 
-        Set<Register> mergedSets = MergeSets.mergeSets(
-                registers,
-                Register::getRegistries
-        );
+        Set<Register> mergedSets = MergeSets.mergeSets(registers, Register::getRegistries);
         Assertions.assertTrue(mergedSets.contains(register1));
         Assertions.assertTrue(mergedSets.contains(register2));
         Assertions.assertTrue(mergedSets.contains(register3));

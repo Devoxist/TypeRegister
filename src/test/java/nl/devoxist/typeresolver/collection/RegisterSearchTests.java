@@ -20,6 +20,8 @@
  * SOFTWARE.
  */
 
+package nl.devoxist.typeresolver.collection;
+
 import nl.devoxist.typeresolver.providers.TypeProvider;
 import nl.devoxist.typeresolver.register.Register;
 import nl.devoxist.typeresolver.register.RegisterPriority;

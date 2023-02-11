@@ -20,38 +20,35 @@
  * SOFTWARE.
  */
 
-package nl.devoxist.typeresolver.supplier;
+package nl.devoxist.typeresolver.functions;
 
 import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.function.Supplier;
+import java.util.function.Consumer;
 
 /**
- * {@link SerializableSupplier} is a subclass of the {@link Supplier}, which makes it possible to serialize a
- * {@link Supplier} and retrieve the type that has been used in the {@link Supplier}.
+ * {@link SerializableConsumer} is a subclass of the {@link Consumer}, which makes it possible to serialize a
+ * {@link Consumer} and retrieve the type that has been used in the {@link Consumer}.
  *
- * @param <T> type of the {@link Supplier}
+ * @param <T> type of the {@link Consumer}
  *
  * @author Dev-Bjorn
  * @version 1.5.0
- * @since 1.1.0
- * @deprecated Use {@link nl.devoxist.typeresolver.functions.SerializableSupplier}.
+ * @since 1.5.0
  */
-@FunctionalInterface
-@Deprecated
-public interface SerializableSupplier<T> extends Serializable, Supplier<T> {
+public interface SerializableConsumer<T> extends Consumer<T>, Serializable {
 
     /**
-     * Get the type of the {@link Supplier}.
+     * Get the type of the {@link Consumer}.
      *
-     * @return The type of the {@link Supplier}
+     * @return The type of the {@link Consumer}
      *
-     * @since 1.1.0
+     * @since 1.5.0
      */
     @SuppressWarnings("unchecked")
-    default Class<T> getSupplierClass() {
+    default Class<T> getConsumerCls() {
         try {
             Method writeReplace = this.getClass().getDeclaredMethod("writeReplace");
 
@@ -62,7 +59,7 @@ public interface SerializableSupplier<T> extends Serializable, Supplier<T> {
             writeReplace.setAccessible(false);
 
             String classPath = sl.getInstantiatedMethodType();
-            classPath = classPath.substring(3, classPath.length() - 1);
+            classPath = classPath.substring(2, classPath.length() - 3);
             classPath = classPath.replaceAll("/", ".");
 
             return (Class<T>) Class.forName(classPath);

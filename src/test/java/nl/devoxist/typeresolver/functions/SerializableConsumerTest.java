@@ -20,46 +20,27 @@
  * SOFTWARE.
  */
 
-package nl.devoxist.typeresolver.providers;
+package nl.devoxist.typeresolver.functions;
 
-import org.jetbrains.annotations.NotNull;
+import nl.devoxist.typeresolver.register.Register;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.util.function.Supplier;
+import java.util.Map;
 
-/**
- * {@link TypeSupplierProvider} is a subclass of {@link TypeProvider} and it links a type with an {@link Object}.
- *
- * @param <T> The type of the type.
- * @param <P> The type of the {@link Supplier} provider.
- *
- * @author Dev-Bjorn
- * @version 1.5.0
- * @since 1.1.0
- */
-public final class TypeObjectProvider<T, P extends T> extends TypeProvider<T, P> {
+public class SerializableConsumerTest {
 
-    /**
-     * Construct a type provider object. This object holds the static object and the type.
-     *
-     * @param typeCls  type of the provider
-     * @param provider The provider of the type.
-     *
-     * @since 1.1.0
-     */
-    public TypeObjectProvider(@NotNull Class<T> typeCls, @NotNull P provider) {
-        super(typeCls, provider);
+    @Test
+    public void getCorrectClass() {
+        SerializableConsumer<Register> consumer = register -> register.unregister(Class.class);
+
+        Assertions.assertEquals(Register.class, consumer.getConsumerCls());
     }
 
-    /**
-     * Get the initiated object of the provider. For example a {@link Supplier} returns the {@link Supplier#get()}.
-     *
-     * @return The initiated object of the provider.
-     *
-     * @since 1.1.0
-     */
-    @Override
-    public T getInitProvider() {
-        return getProvider();
-    }
+    @Test
+    public void getCorrectClassWithGeneric() {
+        SerializableConsumer<Map<Object, Object>> consumer = map -> map.put(new Object(), new Object());
 
+        Assertions.assertEquals(Map.class, consumer.getConsumerCls());
+    }
 }

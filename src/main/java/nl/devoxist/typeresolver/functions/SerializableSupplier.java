@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package nl.devoxist.typeresolver.supplier;
+package nl.devoxist.typeresolver.functions;
 
 import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
@@ -36,11 +36,9 @@ import java.util.function.Supplier;
  *
  * @author Dev-Bjorn
  * @version 1.5.0
- * @since 1.1.0
- * @deprecated Use {@link nl.devoxist.typeresolver.functions.SerializableSupplier}.
+ * @since 1.5.0
  */
 @FunctionalInterface
-@Deprecated
 public interface SerializableSupplier<T> extends Serializable, Supplier<T> {
 
     /**
@@ -48,7 +46,7 @@ public interface SerializableSupplier<T> extends Serializable, Supplier<T> {
      *
      * @return The type of the {@link Supplier}
      *
-     * @since 1.1.0
+     * @since 1.5.0
      */
     @SuppressWarnings("unchecked")
     default Class<T> getSupplierClass() {

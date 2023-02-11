@@ -26,43 +26,41 @@ import nl.devoxist.typeresolver.constructor.ConstructorResolving;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class CustomTypeProviderExample {
+public class IdentifierExample {
 
     public static void main(String[] args)
             throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        TypeRegister.register(new CustomTypeProvider<>(TestType.class, new CustomType<TestType>()));
+        Register register = new Register();
 
-        Example example = ConstructorResolver.initClass(Example.class);
+        register.register(
+                Car.class,
+                (IdentifiersBuilder<Car, Class<? extends Car>> settings) -> settings
+                        .addIdentifier(CarOne.class, new CarOne())
+                        .addIdentifier(CarTwo.class, new CarTwo())
+        );
+
+        CarExporter carExporter = ConstructorResolver.constructClass(CarExporter.class)
+                .setNeedAnnotation(false)
+                .setIdentifiers(CarOneExporter.class)
+                .setRegisters(register)
+                .initClass();
+
+        // DO YOUR STUFF WITH CAR EXPORTER
     }
 
-
-    public static class Example {
-
-        @ConstructorResolving
-        public Example(TestType type) {
-            // Put here your stuff
-        }
+    public record CarExporter(Car car) {
+        // PUT YOUR STUFF HERE
     }
 
-    public static class CustomTypeProvider<T, P extends T> extends TypeProvider<T, CustomType<P>> {
-
-        public CustomTypeProvider(Class<T> typeCls, CustomType<P> provider) {
-            super(typeCls, provider);
-        }
-
-        @Override
-        public T getInitProvider() {
-            // Put here your stuff
-        }
-
-        // Put here your stuff
+    public interface Car {
+        // PUT YOUR STUFF HERE
     }
 
-    public static class CustomType<P> {
-        // Put here your stuff
+    public static class CarOne implements Car {
+        // PUT YOUR STUFF HERE
     }
 
-    public static class TestType {
-        // Put here your stuff
+    public static class CarTwo implements Car {
+        // PUT YOUR STUFF HERE
     }
 }

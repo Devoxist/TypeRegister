@@ -20,51 +20,36 @@
  * SOFTWARE.
  */
 
-import nl.devoxist.typeresolver.providers.TypeProvider;
-import nl.devoxist.typeresolver.register.ObjectFinder;
+package nl.devoxist.typeresolver.functions;
+
 import nl.devoxist.typeresolver.register.Register;
+import nl.devoxist.typeresolver.register.RegisterPriority;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ObjectFinderTests {
+import java.util.HashMap;
+import java.util.Map;
+
+public class SerializableSupplierTest {
 
     @Test
-    public void checkIfTypeIsRegistered() {
-        Register register = new Register();
-        register.register(TestClass.class, new TestClass());
+    public void getCorrectClass() {
+        SerializableSupplier<Register> supplier = Register::new;
 
-        TypeProvider<TestClass, ?> typeProvider = ObjectFinder.findTypeProvider(register, TestClass.class);
-
-        Assertions.assertNotNull(typeProvider);
-    }
-
-    @Test
-    public void checkIfTypeIsSame() {
-        Register register = new Register();
-        TestClass provider = new TestClass();
-        register.register(TestClass.class, provider);
-
-        TypeProvider<TestClass, ?> typeProvider = ObjectFinder.findTypeProvider(register, TestClass.class);
-
-        Assertions.assertEquals(provider, typeProvider.getInitProvider());
+        Assertions.assertEquals(Register.class, supplier.getSupplierClass());
     }
 
     @Test
-    public void checkIfTypeIsSame2() {
-        Register register = new Register();
-        TestClass2 provider = new TestClass2();
-        register.register(TestClass2.class, provider);
+    public void getCorrectClassWithParam() {
+        SerializableSupplier<Register> supplier = () -> new Register(RegisterPriority.HIGH);
 
-        TypeProvider<TestClass2, ?> typeProvider = ObjectFinder.findTypeProvider(register, TestClass2.class);
-
-        Assertions.assertEquals(provider, typeProvider.getInitProvider());
+        Assertions.assertEquals(Register.class, supplier.getSupplierClass());
     }
 
-    public static class TestClass {
+    @Test
+    public void getCorrectClassWithGeneric() {
+        SerializableSupplier<Map<?, ?>> supplier = HashMap::new;
 
-    }
-
-    public static class TestClass2 {
-
+        Assertions.assertEquals(Map.class, supplier.getSupplierClass());
     }
 }

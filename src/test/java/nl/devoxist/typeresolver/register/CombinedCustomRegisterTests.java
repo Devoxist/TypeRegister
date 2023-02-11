@@ -20,9 +20,9 @@
  * SOFTWARE.
  */
 
+package nl.devoxist.typeresolver.register;
+
 import nl.devoxist.typeresolver.exception.RegisterException;
-import nl.devoxist.typeresolver.register.Register;
-import nl.devoxist.typeresolver.register.RegisterPriority;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -30,7 +30,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public class CombinedCustomRegisterTests {
-    
+
     @Test
     public void checkIfTypeIsRegistered() {
         Register register1 = new Register(RegisterPriority.HIGHEST);
@@ -53,14 +53,8 @@ public class CombinedCustomRegisterTests {
         Register register = new Register(register1);
         register.register(TestCls.class, () -> new TestCls(2));
 
-        Assertions.assertEquals(
-                2,
-                ((Supplier<TestCls>) register.getProviderByType(TestCls.class)).get().i
-        );
-        Assertions.assertEquals(
-                1,
-                ((TestCls) register.getProviderByType(TestCls.class, true)).i
-        );
+        Assertions.assertEquals(2, ((Supplier<TestCls>) register.getProviderByType(TestCls.class)).get().i);
+        Assertions.assertEquals(1, ((TestCls) register.getProviderByType(TestCls.class, true)).i);
     }
 
     @Test
@@ -72,39 +66,15 @@ public class CombinedCustomRegisterTests {
         TestCls provider = new TestCls(2);
         register.register(TestCls.class, provider);
 
-        Assertions.assertEquals(
-                2,
-                register.getInitProvider(TestCls.class).i
-        );
-        Assertions.assertNotEquals(
-                1,
-                register.getInitProvider(TestCls.class).i
-        );
-        Assertions.assertEquals(
-                1,
-                register.getInitProvider(TestCls.class, true).i
-        );
-        Assertions.assertNotEquals(
-                2,
-                register.getInitProvider(TestCls.class, true).i
-        );
+        Assertions.assertEquals(2, register.getInitProvider(TestCls.class).i);
+        Assertions.assertNotEquals(1, register.getInitProvider(TestCls.class).i);
+        Assertions.assertEquals(1, register.getInitProvider(TestCls.class, true).i);
+        Assertions.assertNotEquals(2, register.getInitProvider(TestCls.class, true).i);
 
-        Assertions.assertEquals(
-                provider,
-                register.getInitProvider(TestCls.class)
-        );
-        Assertions.assertNotEquals(
-                provider1,
-                register.getInitProvider(TestCls.class)
-        );
-        Assertions.assertEquals(
-                provider1,
-                register.getInitProvider(TestCls.class, true)
-        );
-        Assertions.assertNotEquals(
-                provider,
-                register.getInitProvider(TestCls.class, true)
-        );
+        Assertions.assertEquals(provider, register.getInitProvider(TestCls.class));
+        Assertions.assertNotEquals(provider1, register.getInitProvider(TestCls.class));
+        Assertions.assertEquals(provider1, register.getInitProvider(TestCls.class, true));
+        Assertions.assertNotEquals(provider, register.getInitProvider(TestCls.class, true));
     }
 
     @Test
@@ -119,46 +89,69 @@ public class CombinedCustomRegisterTests {
         TestCls provider = new TestCls(2);
         register.register(TestCls.class, provider);
 
+        Assertions.assertEquals(1, register.getInitProvider(TestCls.class, true).i);
+        Assertions.assertEquals(2, register.getInitProvider(TestCls.class).i);
+        Assertions.assertEquals(provider, register.getInitProvider(TestCls.class));
+        Assertions.assertEquals(provider2, register.getInitProvider(TestClass.class, true));
+        Assertions.assertEquals(provider1, register.getInitProvider(TestCls.class, true));
+        Assertions.assertThrowsExactly(RegisterException.class, () -> register.getInitProvider(TestClass.class));
+        Assertions.assertNotEquals(1, register.getInitProvider(TestCls.class).i);
+        Assertions.assertNotEquals(2, register.getInitProvider(TestCls.class, true).i);
+        Assertions.assertNotEquals(provider1, register.getInitProvider(TestCls.class));
+        Assertions.assertNotEquals(provider, register.getInitProvider(TestCls.class, true));
+    }
+
+    @Test
+    public void checkIfGottenTypeSameType4() {
+        Register register2 = new Register(RegisterPriority.HIGH);
+        TestClass provider2 = new TestClass();
+        register2.register(TestClass.class, provider2);
+        Register register1 = new Register(RegisterPriority.HIGHEST, register2);
+        TestCls provider1 = new TestCls(1);
+        register1.register(TestCls.class, provider1);
+        Register register = new Register(register1);
+        TestCls provider = new TestCls(2);
+        register.register(TestCls.class, provider);
+
         Assertions.assertEquals(
                 1,
-                register.getInitProvider(TestCls.class, true).i
+                register.getInitProvider(
+                        TestCls.class,
+                        initProviderSettings -> initProviderSettings.useAllRegisters(true)
+                ).i
         );
-        Assertions.assertEquals(
-                2,
-                register.getInitProvider(TestCls.class).i
-        );
-        Assertions.assertEquals(
-                provider,
-                register.getInitProvider(TestCls.class)
-        );
+        Assertions.assertEquals(2, register.getInitProvider(TestCls.class).i);
+        Assertions.assertEquals(provider, register.getInitProvider(TestCls.class));
         Assertions.assertEquals(
                 provider2,
-                register.getInitProvider(TestClass.class, true)
+                register.getInitProvider(
+                        TestClass.class,
+                        initProviderSettings -> initProviderSettings.useAllRegisters(true)
+                )
         );
         Assertions.assertEquals(
                 provider1,
-                register.getInitProvider(TestCls.class, true)
+                register.getInitProvider(
+                        TestCls.class,
+                        initProviderSettings -> initProviderSettings.useAllRegisters(true)
+                )
         );
-        Assertions.assertThrowsExactly(
-                RegisterException.class,
-                () -> register.getInitProvider(TestClass.class),
-                "The provider of 'TestClass' is not registered."
-        );
-        Assertions.assertNotEquals(
-                1,
-                register.getInitProvider(TestCls.class).i
-        );
+        Assertions.assertThrowsExactly(RegisterException.class, () -> register.getInitProvider(TestClass.class));
+        Assertions.assertNotEquals(1, register.getInitProvider(TestCls.class).i);
         Assertions.assertNotEquals(
                 2,
-                register.getInitProvider(TestCls.class, true).i
+                register.getInitProvider(
+                        TestCls.class,
+                        initProviderSettings -> initProviderSettings.useAllRegisters(true)
+                ).i
         );
-        Assertions.assertNotEquals(
-                provider1,
-                register.getInitProvider(TestCls.class)
-        );
+        Assertions.assertNotEquals(provider1, register.getInitProvider(TestCls.class));
         Assertions.assertNotEquals(
                 provider,
-                register.getInitProvider(TestCls.class, true)
+                register.getInitProvider(
+                        TestCls.class,
+                        initProviderSettings -> initProviderSettings.useAllRegisters(true)
+                )
         );
     }
 

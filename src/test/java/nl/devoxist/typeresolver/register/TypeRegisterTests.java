@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2023 Devoxist, Dev-Bjorn
+ * Copyright (c) 2023 Devoxist, Dev-Bjorn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,10 +20,14 @@
  * SOFTWARE.
  */
 
+package nl.devoxist.typeresolver.register;
+
 import nl.devoxist.typeresolver.TypeRegister;
+import nl.devoxist.typeresolver.exception.RegisterException;
 import nl.devoxist.typeresolver.providers.TypeObjectProvider;
 import nl.devoxist.typeresolver.providers.TypeProvider;
 import nl.devoxist.typeresolver.providers.TypeSupplierProvider;
+import nl.devoxist.typeresolver.providers.builders.IdentifiersBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -89,6 +93,20 @@ public class TypeRegisterTests {
     }
 
     @Test
+    public void checkIfTypeIsRegistered7() {
+        TypeRegister.register(
+                Exporter.class,
+                (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
+                        .addIdentifier(CarOneExporter.class, new CarOneExporter())
+                        .addIdentifier(CarTwoExporter.class, new CarTwoExporter())
+        );
+
+        Assertions.assertTrue(TypeRegister.hasProvider(Exporter.class));
+
+        TypeRegister.unregister(Exporter.class);
+    }
+
+    @Test
     public void checkIfTypeIsNotRegistered() {
         TypeRegister.register(TestClass.class, TestClass::new);
 
@@ -144,6 +162,19 @@ public class TypeRegisterTests {
         TypeRegister.unregister(TestCls.class);
     }
 
+    @Test
+    public void checkIfTypeIsNotRegistered7() {
+        TypeRegister.register(
+                TestClass.class,
+                (IdentifiersBuilder<TestClass, Class<TestClass>> settings) -> settings
+                        .addIdentifier(TestClass.class, new TestClass())
+        );
+
+        Assertions.assertFalse(TypeRegister.hasProvider(Exporter.class));
+
+        TypeRegister.unregister(TestClass.class);
+    }
+
 
     @Test
     public void checkIfGottenTypeSameType1() {
@@ -193,6 +224,36 @@ public class TypeRegisterTests {
         Assertions.assertEquals(testClassCustomType.type, TypeRegister.getInitProvider(TestCls.class));
 
         TypeRegister.unregister(TestCls.class);
+    }
+
+    @Test
+    public void checkIfGottenTypeSameType6() {
+        CarOneExporter carOneExporter = new CarOneExporter();
+        CarTwoExporter carTwoExporter = new CarTwoExporter();
+        TypeRegister.register(
+                Exporter.class,
+                (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
+                        .addIdentifier(CarOneExporter.class, carOneExporter)
+                        .addIdentifier(CarTwoExporter.class, carTwoExporter)
+        );
+
+        Assertions.assertEquals(
+                carOneExporter,
+                TypeRegister.getInitProvider(
+                        Exporter.class,
+                        initProviderSettings -> initProviderSettings.setIdentifiers(CarOneExporter.class)
+                )
+        );
+
+        Assertions.assertEquals(
+                carTwoExporter,
+                TypeRegister.getInitProvider(
+                        Exporter.class,
+                        initProviderSettings -> initProviderSettings.setIdentifiers(CarTwoExporter.class)
+                )
+        );
+
+        TypeRegister.unregister(Exporter.class);
     }
 
     @Test
@@ -259,6 +320,15 @@ public class TypeRegisterTests {
         Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
     }
 
+    @Test
+    public void checkIfUnregisterFail() {
+        Assertions.assertThrows(
+                RegisterException.class,
+                () -> TypeRegister.unregister(TestClass.class)
+        );
+    }
+
+
     public static class TestClass {
 
     }
@@ -282,8 +352,8 @@ public class TypeRegisterTests {
 
     public static class CustomTypeProvider<T, P extends T> extends TypeProvider<T, CustomType<P>> {
 
-        public CustomTypeProvider(Class<T> type, CustomType<P> provider) {
-            super(type, provider);
+        public CustomTypeProvider(Class<T> typeCls, CustomType<P> provider) {
+            super(typeCls, provider);
         }
 
         @Override
@@ -296,5 +366,17 @@ public class TypeRegisterTests {
     public static class CustomType<P> {
         private P type;
     }
+
+    public interface Exporter {
+
+    }
+
+    public static class CarTwoExporter implements Exporter {
+
+    }
+
+    public static class CarOneExporter implements Exporter {
+    }
+
 
 }

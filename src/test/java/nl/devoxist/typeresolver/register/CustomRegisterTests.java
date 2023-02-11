@@ -20,10 +20,14 @@
  * SOFTWARE.
  */
 
+package nl.devoxist.typeresolver.register;
+
+import nl.devoxist.typeresolver.exception.RegisterException;
 import nl.devoxist.typeresolver.providers.TypeObjectProvider;
 import nl.devoxist.typeresolver.providers.TypeProvider;
 import nl.devoxist.typeresolver.providers.TypeSupplierProvider;
-import nl.devoxist.typeresolver.register.Register;
+import nl.devoxist.typeresolver.providers.builders.IdentifiersBuilder;
+import nl.devoxist.typeresolver.providers.builders.TypeProviderBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -84,6 +88,43 @@ public class CustomRegisterTests {
     }
 
     @Test
+    public void checkIfTypeIsRegistered7() {
+        Register register = new Register();
+
+        register.register(
+                Exporter.class,
+                (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings.addIdentifier(
+                        CarOneExporter.class,
+                        new CarOneExporter()
+                ).addIdentifier(CarTwoExporter.class, new CarTwoExporter())
+        );
+
+        Assertions.assertTrue(register.hasProvider(Exporter.class));
+
+    }
+
+    @Test
+    public void registerFailTest() {
+        Register register = new Register();
+
+        Assertions.assertThrows(
+                RegisterException.class,
+                () -> register.register(
+                        Exporter.class,
+                        (TypeProviderBuilder<Exporter> settings) -> settings.getClass()
+                )
+        );
+
+    }
+
+    @Test
+    public void registerFailTest2() {
+        Register register = new Register();
+
+        Assertions.assertThrows(RegisterException.class, () -> register.register(Exporter.class, new TestCls(1)));
+    }
+
+    @Test
     public void checkIfTypeIsNotRegistered() {
         Register register = new Register();
         register.register(TestClass.class, TestClass::new);
@@ -134,6 +175,20 @@ public class CustomRegisterTests {
         Assertions.assertFalse(register.hasProvider(TestClass.class));
     }
 
+    @Test
+    public void checkIfTypeIsNotRegistered7() {
+
+        Register register = new Register();
+
+        register.register(
+                TestClass.class,
+                (IdentifiersBuilder<TestClass, Class<TestClass>> settings) ->
+                        settings.addIdentifier(TestClass.class, new TestClass())
+        );
+
+        Assertions.assertFalse(register.hasProvider(Exporter.class));
+    }
+
 
     @Test
     public void checkIfGottenTypeSameType1() {
@@ -179,6 +234,41 @@ public class CustomRegisterTests {
 
         Assertions.assertEquals(testClassCustomType.type, register.getInitProvider(TestCls.class));
 
+    }
+
+
+    @Test
+    public void checkIfGottenTypeSameType6() {
+        Register register = new Register();
+        CarOneExporter carOneExporter = new CarOneExporter();
+        CarTwoExporter carTwoExporter = new CarTwoExporter();
+
+        register.register(
+                Exporter.class,
+                (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
+                        .addIdentifier(CarOneExporter.class, carOneExporter)
+                        .addIdentifier(CarTwoExporter.class, carTwoExporter)
+        );
+
+        Assertions.assertEquals(carOneExporter, register.getInitProvider(
+                Exporter.class,
+                initProviderSettings -> initProviderSettings.setIdentifiers(CarOneExporter.class)
+        ));
+
+        Assertions.assertEquals(carTwoExporter, register.getInitProvider(
+                Exporter.class,
+                initProviderSettings -> initProviderSettings.setIdentifiers(CarTwoExporter.class)
+        ));
+
+    }
+
+    @Test
+    public void getTypeProviderTestFail() {
+        Register register = new Register();
+        Assertions.assertThrows(
+                RegisterException.class,
+                () -> ((Supplier<?>) register.getProviderByType(TestClass.class)).get()
+        );
     }
 
     @Test
@@ -253,6 +343,12 @@ public class CustomRegisterTests {
         Assertions.assertFalse(register.hasProvider(TestClass.class));
     }
 
+    @Test
+    public void checkIfUnregisterFail() {
+        Register register = new Register();
+        Assertions.assertThrows(RegisterException.class, () -> register.unregister(TypeRegisterTests.TestClass.class));
+    }
+
     public static class TestClass {
 
     }
@@ -276,8 +372,8 @@ public class CustomRegisterTests {
 
     public static class CustomTypeProvider<T, P extends T> extends TypeProvider<T, CustomType<P>> {
 
-        public CustomTypeProvider(Class<T> type, CustomType<P> provider) {
-            super(type, provider);
+        public CustomTypeProvider(Class<T> typeCls, CustomType<P> provider) {
+            super(typeCls, provider);
         }
 
         @Override
@@ -289,5 +385,16 @@ public class CustomRegisterTests {
 
     public static class CustomType<P> {
         private P type;
+    }
+
+    public interface Exporter {
+
+    }
+
+    public static class CarTwoExporter implements Exporter {
+
+    }
+
+    public static class CarOneExporter implements Exporter {
     }
 }
