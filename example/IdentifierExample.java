@@ -34,18 +34,23 @@ public class IdentifierExample {
 
         register.register(
                 Car.class,
-                (IdentifiersBuilder<Car, Class<? extends Car>> settings) -> settings
-                        .addIdentifier(CarOne.class, new CarOne())
-                        .addIdentifier(CarTwo.class, new CarTwo())
+                (IdentifiersBuilder<Car, Cars> settings) -> settings
+                        .addIdentifier(Cars.ONE, new CarOne())
+                        .addIdentifier(Cars.TWO, new CarTwo())
         );
 
         CarExporter carExporter = ConstructorResolver.constructClass(CarExporter.class)
                 .setNeedAnnotation(false)
-                .setIdentifiers(CarOneExporter.class)
+                .setIdentifiers(Cars.ONE)
                 .setRegisters(register)
                 .initClass();
 
         // DO YOUR STUFF WITH CAR EXPORTER
+    }
+
+    public enum Cars {
+        ONE,
+        TWO
     }
 
     public record CarExporter(Car car) {

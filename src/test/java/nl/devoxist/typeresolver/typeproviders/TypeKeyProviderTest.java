@@ -51,6 +51,25 @@ public class TypeKeyProviderTest {
     }
 
     @Test
+    public void getInitProviderTest2() {
+        IdentifiersBuilder<Exporter, Exporters> identifiersBuilder = new IdentifiersBuilder<>();
+        CarOneExporter carOneExporter = new CarOneExporter();
+        CarTwoExporter carTwoExporter = new CarTwoExporter();
+        identifiersBuilder.addIdentifier(Exporters.CAR_ONE, carOneExporter);
+        identifiersBuilder.addIdentifier(Exporters.CAR_TWO, carTwoExporter);
+
+        TypeKeyProvider<Exporter, Exporters> typeKeyProvider = identifiersBuilder.buildProvider(Exporter.class);
+
+        typeKeyProvider = typeKeyProvider.applyIdentifiers(Exporters.CAR_ONE);
+
+        Assertions.assertEquals(carOneExporter, typeKeyProvider.getInitProvider());
+
+        typeKeyProvider = typeKeyProvider.applyIdentifiers(Exporters.CAR_TWO);
+
+        Assertions.assertEquals(carTwoExporter, typeKeyProvider.getInitProvider());
+    }
+
+    @Test
     public void getInitProviderFailTest() {
         IdentifiersBuilder<Exporter, Class<? extends Exporter>> identifiersBuilder = new IdentifiersBuilder<>();
         identifiersBuilder.addIdentifier(CarOneExporter.class, new CarOneExporter());
@@ -76,8 +95,13 @@ public class TypeKeyProviderTest {
         Assertions.assertEquals(carOneExporter, typeKeyProvider.getInitProvider());
 
         typeKeyProvider = typeKeyProvider.applyIdentifiers(CarTwoExporter.class);
-        
+
         Assertions.assertThrows(ProviderException.class, typeKeyProvider::getInitProvider);
+    }
+
+    public enum Exporters {
+        CAR_ONE,
+        CAR_TWO
     }
 
     public interface Exporter {

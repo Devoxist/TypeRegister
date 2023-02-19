@@ -110,10 +110,22 @@ two generic parameters, a type and an identifier. Use the identifier parameter t
 After that use the methods provided in the builder to build to `TypeProvider`. Do not use the
 `TypeProviderBuilder#buildProvider` is automatically done through the `Register`.
 
+For example the enum Cars is the identifier:
+
 ```java
-register.register(Car.class, (IdentifiersBuilder<Car, Class<? extends Car>> settings) -> settings
-                        .addIdentifier(CarOne.class, new CarOne())
-                        .addIdentifier(CarTwo.class, new CarTwo())
+public enum Cars {
+    ONE,
+    TWO
+}
+```
+
+The identifier can be added with the value can be added through the `#addIdentifier` in the consumer. The key is the
+first parameter of the `#addIdentifier` represents the key. The second parameter represents the value of the key.
+
+```java
+register.register(Car.class, (IdentifiersBuilder<Car, Cars> settings) -> settings
+                        .addIdentifier(Cars.ONE, new CarOne())
+                        .addIdentifier(Cars.TWO, new CarTwo())
                  );
 ```
 
@@ -121,7 +133,7 @@ How to retrieve this identifier type of the register? This can be done through t
 method which the settings and set the identifiers through the `setIdentifiers` method.
 
 ```java
- register.getInitProvider(Car.class, initProviderSettings -> initProviderSettings.setIdentifiers(CarOne.class));
+ register.getInitProvider(Car.class, initProviderSettings -> initProviderSettings.setIdentifiers(Cars.ONE));
 ```
 
 #### InitProvider Settings
@@ -196,6 +208,12 @@ cars. There is a class that handles the car object, only it does not know which 
 create the objects.
 
 ```java
+// Identifier keys
+public enum Cars {
+    ONE,
+    TWO
+}
+
 // Exporter
 public record CarExporter(Car car) {
     // PUT YOUR STUFF HERE
@@ -224,10 +242,13 @@ two generic parameters, a type and an identifier. Use the identifier parameter t
 After that use the methods provided in the builder to build to `TypeProvider`. Do not use the 
 `TypeProviderBuilder#buildProvider` is automatically done through the `Register`.
 
+The identifier can be added with the value can be added through the `#addIdentifier` in the consumer. The key is the
+first parameter of the `#addIdentifier` represents the key. The second parameter represents the value of the key.
+
 ```java
-register.register(Car.class, (IdentifiersBuilder<Car, Class<? extends Car>> settings) -> settings
-                        .addIdentifier(CarOne.class, new CarOne())
-                        .addIdentifier(CarTwo.class, new CarTwo())
+register.register(Car.class, (IdentifiersBuilder<Car, Cars> settings) -> settings
+                        .addIdentifier(Cars.ONE, new CarOne())
+                        .addIdentifier(Cars.TWO, new CarTwo())
                  );
 ```
 
@@ -241,16 +262,17 @@ Method 1:
 ```java
 CarExporter carExporter = ConstructorResolver.constructClass(CarExporter.class)
         .setNeedAnnotation(false)
-        .setIdentifiers(CarOneExporter.class)
+        .setIdentifiers(Cars.ONE)
         .setRegisters(register)
         .initClass();
 ```
 
 Method 2:
+
 ```java
 CarExporter carExporter2 = ConstructorResolver.initClass(CarExporter.class, constructionSettings -> {
     constructionSettings.setNeedAnnotation(false);
-    constructionSettings.setIdentifiers(CarOneExporter.class);
+    constructionSettings.setIdentifiers(Cars.ONE);
     constructionSettings.setRegisters(register);
 });
 ```
