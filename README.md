@@ -243,7 +243,7 @@ After that use the methods provided in the builder to build to `TypeProvider`. D
 `TypeProviderBuilder#buildProvider` is automatically done through the `Register`.
 
 The identifier can be added with the value can be added through the `#addIdentifier` in the consumer. The key is the
-first parameter of the `#addIdentifier` represents the key. The second parameter represents the value of the key.
+first parameter of the `#addIdentifier` represents the key. The second parameter represents the value of the key. 
 
 ```java
 register.register(Car.class, (IdentifiersBuilder<Car, Cars> settings) -> settings
@@ -251,6 +251,9 @@ register.register(Car.class, (IdentifiersBuilder<Car, Cars> settings) -> setting
                         .addIdentifier(Cars.TWO, new CarTwo())
                  );
 ```
+
+It is also possible to scoped value like in C#, this can be added like `#addSupplierIdentifier`. A scoped value is a
+value that represents a value that each time will be constructed when the `TypeProvider#getInitProvider` is called.
 
 At last in use the ConstructorResolver with the settings consumer or use the builder like in the example below. Set the
 identifiers through the `setIdentifiers` method, in the consumer or the builder. The builder needs

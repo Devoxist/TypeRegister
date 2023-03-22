@@ -23,13 +23,17 @@
 package nl.devoxist.typeresolver.providers.builders;
 
 import nl.devoxist.typeresolver.exception.RegisterException;
+import nl.devoxist.typeresolver.functions.SerializableSupplier;
 import nl.devoxist.typeresolver.providers.TypeKeyProvider;
+import nl.devoxist.typeresolver.providers.TypeObjectProvider;
 import nl.devoxist.typeresolver.providers.TypeProvider;
+import nl.devoxist.typeresolver.providers.TypeSupplierProvider;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * {@link IdentifiersBuilder} is the subclass of {@link TypeProviderBuilder} which will chain-edit the a
@@ -48,20 +52,37 @@ public final class IdentifiersBuilder<T, I> extends TypeProviderBuilder<T> {
      *
      * @since 1.5.0
      */
-    private final Map<I, T> identifiersMap = new HashMap<>();
+    private final Map<I, TypeProvider<T, ?>> identifiersMap = new HashMap<>();
 
     /**
      * Add an identifier with a value to the {@link TypeKeyProvider#getIdentifiersMap()}.
      *
      * @param identifier The identifier which will be linked to the value.
-     * @param value      The value of the identifier.
+     * @param value      The value of the identifier. This value will be returned when the given identifier is applied
+     *                   in {@link TypeKeyProvider}.
      *
      * @return The builder of the {@link TypeKeyProvider} to chain-edit the {@link TypeKeyProvider}, when the
      * options are set call the {@link IdentifiersBuilder#buildProvider(Class)} to get the {@link TypeProvider}.
      */
     @Contract("_, _ -> this")
     public IdentifiersBuilder<T, I> addIdentifier(I identifier, T value) {
-        this.identifiersMap.put(identifier, value);
+        this.identifiersMap.put(identifier, new TypeObjectProvider<>((Class<T>) value.getClass(), value));
+        return this;
+    }
+
+    /**
+     * Add an identifier with a value to the {@link TypeKeyProvider#getIdentifiersMap()}.
+     *
+     * @param identifier The identifier which will be linked to the value.
+     * @param value      The supplier value of the identifier. Each time the {@link TypeKeyProvider#getInitProvider()}
+     *                   and the given identifier is applied, it will return the output of {@link Supplier#get()}.
+     *
+     * @return The builder of the {@link TypeKeyProvider} to chain-edit the {@link TypeKeyProvider}, when the
+     * options are set call the {@link IdentifiersBuilder#buildProvider(Class)} to get the {@link TypeProvider}.
+     */
+    @Contract("_, _ -> this")
+    public IdentifiersBuilder<T, I> addSupplierIdentifier(I identifier, SerializableSupplier<T> value) {
+        this.identifiersMap.put(identifier, new TypeSupplierProvider<>(value.getSupplierClass(), value));
         return this;
     }
 

@@ -70,6 +70,46 @@ public class TypeKeyProviderTest {
     }
 
     @Test
+    public void getInitProviderTest3() {
+        IdentifiersBuilder<Exporter, Exporters> identifiersBuilder = new IdentifiersBuilder<>();
+        identifiersBuilder.addSupplierIdentifier(Exporters.CAR_ONE, CarOneExporter::new);
+        identifiersBuilder.addSupplierIdentifier(Exporters.CAR_TWO, CarTwoExporter::new);
+
+        TypeKeyProvider<Exporter, Exporters> typeKeyProvider = identifiersBuilder.buildProvider(Exporter.class);
+
+        typeKeyProvider = typeKeyProvider.applyIdentifiers(Exporters.CAR_ONE);
+
+        Assertions.assertEquals(CarOneExporter.class, typeKeyProvider.getInitProvider().getClass());
+        Assertions.assertNotEquals(typeKeyProvider.getInitProvider(), typeKeyProvider.getInitProvider());
+
+        typeKeyProvider = typeKeyProvider.applyIdentifiers(Exporters.CAR_TWO);
+
+        Assertions.assertEquals(CarTwoExporter.class, typeKeyProvider.getInitProvider().getClass());
+        Assertions.assertNotEquals(typeKeyProvider.getInitProvider(), typeKeyProvider.getInitProvider());
+    }
+
+    @Test
+    public void getInitProviderTest4() {
+        IdentifiersBuilder<Exporter, Exporters> identifiersBuilder = new IdentifiersBuilder<>();
+        identifiersBuilder.addSupplierIdentifier(Exporters.CAR_ONE, CarOneExporter::new);
+        CarTwoExporter carTwoExporter = new CarTwoExporter();
+        identifiersBuilder.addIdentifier(Exporters.CAR_TWO, carTwoExporter);
+
+        TypeKeyProvider<Exporter, Exporters> typeKeyProvider = identifiersBuilder.buildProvider(Exporter.class);
+
+        typeKeyProvider = typeKeyProvider.applyIdentifiers(Exporters.CAR_ONE);
+
+        Assertions.assertEquals(CarOneExporter.class, typeKeyProvider.getInitProvider().getClass());
+        Assertions.assertNotEquals(typeKeyProvider.getInitProvider(), typeKeyProvider.getInitProvider());
+
+        typeKeyProvider = typeKeyProvider.applyIdentifiers(Exporters.CAR_TWO);
+
+        Assertions.assertEquals(carTwoExporter, typeKeyProvider.getInitProvider());
+        Assertions.assertEquals(typeKeyProvider.getInitProvider(), typeKeyProvider.getInitProvider());
+    }
+
+
+    @Test
     public void getInitProviderFailTest() {
         IdentifiersBuilder<Exporter, Class<? extends Exporter>> identifiersBuilder = new IdentifiersBuilder<>();
         identifiersBuilder.addIdentifier(CarOneExporter.class, new CarOneExporter());
@@ -98,6 +138,7 @@ public class TypeKeyProviderTest {
 
         Assertions.assertThrows(ProviderException.class, typeKeyProvider::getInitProvider);
     }
+
 
     public enum Exporters {
         CAR_ONE,

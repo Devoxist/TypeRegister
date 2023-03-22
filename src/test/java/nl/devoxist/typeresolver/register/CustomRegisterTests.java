@@ -226,6 +226,14 @@ public class CustomRegisterTests {
     }
 
     @Test
+    public void checkIfGottenTypeSameType7() {
+        Register register = new Register();
+        register.register(Supplier.class, (Supplier<TestClass>) TestClass::new);
+
+        Assertions.assertTrue(register.getInitProvider(Supplier.class) instanceof Supplier<?>);
+    }
+
+    @Test
     public void checkIfGottenTypeSameType5() {
         Register register = new Register();
         CustomType<TestCls> testClassCustomType = new CustomType<>();

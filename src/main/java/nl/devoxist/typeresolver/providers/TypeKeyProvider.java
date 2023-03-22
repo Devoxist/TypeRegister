@@ -42,13 +42,13 @@ import java.util.Map;
  * @version 1.5.0
  * @since 1.5.0
  */
-public final class TypeKeyProvider<T, I> extends TypeProvider<T, Collection<? extends T>> implements Cloneable {
+public final class TypeKeyProvider<T, I> extends TypeProvider<T, Collection<?>> implements Cloneable {
     /**
      * The {@link Map} that holds the identifiers with their implementations of the type.
      *
      * @since 1.5.0
      */
-    private final Map<I, T> identifiersMap;
+    private final Map<I, TypeProvider<T, ?>> identifiersMap;
     /**
      * The identifier to get the value {@link #identifiersMap}. NOTE: this can only be applied when this is a clone. The
      * {@link #applyIdentifiers(Object[])} sets the value of this field.
@@ -66,7 +66,7 @@ public final class TypeKeyProvider<T, I> extends TypeProvider<T, Collection<? ex
      * @throws ProviderException If there are no identifiers registered.
      * @since 1.5.0
      */
-    public TypeKeyProvider(@NotNull Class<T> typeCls, @NotNull Map<I, T> identifiersMap) {
+    public TypeKeyProvider(@NotNull Class<T> typeCls, @NotNull Map<I, TypeProvider<T, ?>> identifiersMap) {
         super(typeCls, identifiersMap.values());
 
         if (identifiersMap.size() == 0) {
@@ -84,7 +84,7 @@ public final class TypeKeyProvider<T, I> extends TypeProvider<T, Collection<? ex
      * @since 1.5.0
      */
     @Contract(pure = true)
-    public @NotNull Map<I, T> getIdentifiersMap() {
+    public @NotNull Map<I, Object> getIdentifiersMap() {
         return new HashMap<>(identifiersMap);
     }
 
@@ -125,14 +125,20 @@ public final class TypeKeyProvider<T, I> extends TypeProvider<T, Collection<? ex
      */
     @Nullable
     private T getInstance() {
-        for (Object o : identifiers) {
-            T t = identifiersMap.get(o);
+        for (Object identifier : identifiers) {
+            TypeProvider<T, ?> item = identifiersMap.get(identifier);
 
-            if (t == null) {
+            if (item == null) {
                 continue;
             }
 
-            return t;
+            T instance = item.getInitProvider();
+
+            if (!getType().isInstance(instance)) {
+                throw new ProviderException("The object that has been registered is not an instance of the type.");
+            }
+
+            return instance;
         }
 
         return null;
@@ -214,13 +220,12 @@ public final class TypeKeyProvider<T, I> extends TypeProvider<T, Collection<? ex
      * @see java.lang.Cloneable
      * @since 1.5.0
      */
-    @SuppressWarnings("unchecked")
     @Override
     public TypeKeyProvider<T, I> clone() {
         try {
             return (TypeKeyProvider<T, I>) super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
+            throw new AssertionError(e);
         }
     }
 }
