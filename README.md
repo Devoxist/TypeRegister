@@ -51,8 +51,8 @@ You can include the TypeRegister library in your Java project by adding the foll
 
 ```xml
 <dependency>
-    <groupId>com.example</groupId>
-    <artifactId>typeregister</artifactId>
+    <groupId>nl.devoxist</groupId>
+    <artifactId>TypeRegister</artifactId>
     <version>1.6.1</version>
 </dependency>
 ```
