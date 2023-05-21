@@ -138,8 +138,8 @@ Here are some additional usage examples to illustrate the features of the `TypeR
 
 ```java
 // Define a type and its provider
-TypeProvider<Car, CarProvider> carProvider = new TypeProvider<>(Car.class, CarProvider.class);
-TypeProvider<Bus, BusProvider> busProvider = new TypeProvider<>(Bus.class, BusProvider.class);
+TypeProvider<Car, CarProvider> carProvider = new ObjectProvider<>(Car.class, new CarProvider());
+TypeProvider<Bus, BusProvider> busProvider = new ObjectProvider<>(Bus.class, new BusProvider());
 
 // Register the type-provider links
 TypeRegister.register(carProvider);
@@ -158,8 +158,8 @@ bus.drive();
 
 ```java
 // Register the type-provider links
-TypeRegister.register(new TypeProvider<Rectangle, RectangleProvider>(Rectangle.class, RectangleProvider.class));
-TypeRegister.register(new TypeProvider<Circle, CircleProvider>(Circle.class, CircleProvider.class));
+TypeRegister.register(new ObjectProvider<Rectangle, RectangleProvider>(Rectangle.class, new RectangleProvider()));
+TypeRegister.register(new ObjectProvider<Circle, CircleProvider>(Circle.class, new CircleProvider()));
 
 // Retrieve providers by type
 RectangleProvider rectangleProvider = TypeRegister.getProviderByType(Rectangle.class);
@@ -177,8 +177,8 @@ circle.draw();
 
 ```java
 // Register the type-provider links
-TypeRegister.register(new TypeProvider<Animal, AnimalProvider>(Animal.class, AnimalProvider.class));
-TypeRegister.register(new TypeProvider<Plant, PlantProvider>(Plant.class, PlantProvider.class));
+TypeRegister.register(new ObjectProvider<Animal, AnimalProvider>(Animal.class, new AnimalProvider()));
+TypeRegister.register(new ObjectProvider<Plant, PlantProvider>(Plant.class, new PlantProvider()));
 
 // Unregister a type-provider link
 TypeRegister.unregister(Animal.class);
@@ -361,10 +361,10 @@ class and performing register-related operations using its methods. Here's an ex
 CustomRegister customRegister = new CustomRegister();
 
 // Register type-provider links using custom register
-customRegister.register(new TypeProvider<>(Car.class, CarProvider.class));
+customRegister.register(new ObjectProvider<>(Car.class, new CarProvider()));
 
 // Unregister type-provider links using custom register
-customRegister.unregister(new TypeProvider<>(Bus.class, BusProvider.class));
+customRegister.unregister(new ObjectProvider<>(Bus.class, new BusProvider()));
 ```
 
 In the above example, we instantiate the `CustomRegister` class and use it to register and unregister type-provider
@@ -431,16 +431,16 @@ Register register1 = new Register();
 Register register2 = new Register();
 
 // Register type-provider links with register1
-register1.register(new TypeProvider<>(Car.class, CarProvider.class));
+register1.register(new ObjectProvider<>(Car.class, new CarProvider()));
 
 // Register type-provider links with register2
-register2.register(new TypeProvider<>(Bus.class, BusProvider.class));
+register2.register(new ObjectProvider<>(Bus.class, new BusProvider()));
 
 // Unregister type-provider links from register1
-register1.unregister(new TypeProvider<>(Car.class, CarProvider.class));
+register1.unregister(new ObjectProvider<>(Car.class, new CarProvider()));
 
 // Unregister type-provider links from register2
-register2.unregister(new TypeProvider<>(Bus.class, BusProvider.class));
+register2.unregister(new ObjectProvider<>(Bus.class, new BusProvider()));
 ```
 
 In the above example, we register type-provider links for the `Car` and `Bus` types using separate register instances.
@@ -458,10 +458,10 @@ Register register1 = new Register();
 Register register2 = new Register();
 
 // Register type-provider links with register1
-register1.register(new TypeProvider<>(Car.class, CarProvider.class));
+register1.register(new ObjectProvider<>(Car.class, new CarProvider()));
 
 // Register type-provider links with register2
-register2.register(new TypeProvider<>(Bus.class, BusProvider.class));
+register2.register(new ObjectProvider<>(Bus.class, new BusProvider()));
 
 // Retrieve the type provider for Car from register1
 TypeProvider<Car, CarProvider> carProvider1 = register1.getProviderByType(Car.class);
@@ -497,10 +497,10 @@ CustomRegister register1 = new CustomRegister();
 CustomRegister register2 = new CustomRegister();
 
 // Register type-provider links with register1
-register1.register(new TypeProvider<>(Car.class, CarProvider.class));
+register1.register(new ObjectProvider<>(Car.class, new CarProvider()));
 
 // Register type-provider links with register2
-register2.register(new TypeProvider<>(Bus.class, BusProvider.class));
+register2.register(new ObjectProvider<>(Bus.class, new BusProvider()));
 
 // Access custom functionality of register1
 register1.addTypeAlias("Car", "Automobile");
@@ -535,10 +535,10 @@ Register register1 = new Register();
 Register register2 = new Register();
 
 // Register type-provider links with register1
-register1.register(new TypeProvider<>(Car.class, CarProvider.class));
+register1.register(new ObjectProvider<>(Car.class, new CarProvider()));
 
 // Register type-provider links with register2
-register2.register(new TypeProvider<>(Bus.class, BusProvider.class));
+register2.register(new ObjectProvider<>(Bus.class, new BusProvider()));
 
 // Merge register1 and register2 into a new register
 Register mergedRegister = new Register(register1, register2);
@@ -562,13 +562,13 @@ Register register2 = new Register();
 Register register3 = new Register();
 
 // Register type-provider links with register1
-register1.register(new TypeProvider<>(Car.class, CarProvider.class));
+register1.register(new ObjectProvider<>(Car.class, new CarProvider()));
 
 // Register type-provider links with register2
-register2.register(new TypeProvider<>(Bus.class, BusProvider.class));
+register2.register(new ObjectProvider<>(Bus.class, new BusProvider()));
 
 // Register type-provider links with register3
-register3.register(new TypeProvider<>(Train.class, TrainProvider.class));
+register3.register(new ObjectProvider<>(Train.class, new TrainProvider()));
 
 // Merge register1, register2, and register3 into a new register
 Register mergedRegister = new Register(register1, register2, register3);
@@ -645,13 +645,13 @@ Register mediumPriorityRegister = new Register(RegisterPriority.MEDIUM);
 Register lowPriorityRegister = new Register(RegisterPriority.LOW);
 
 // Register type-provider links with the high priority register
-highPriorityRegister.register(new TypeProvider<>(SomeType.class, HighPriorityProvider.class));
+highPriorityRegister.register(new ObjectProvider<>(SomeType.class, new HighPriorityProvider()));
 
 // Register type-provider links with the medium priority register
-mediumPriorityRegister.register(new TypeProvider<>(SomeType.class, MediumPriorityProvider.class));
+mediumPriorityRegister.register(new ObjectProvider<>(SomeType.class, new MediumPriorityProvider()));
 
 // Register type-provider links with the low priority register
-lowPriorityRegister.register(new TypeProvider<>(SomeType.class, LowPriorityProvider.class));
+lowPriorityRegister.register(new ObjectProvider<>(SomeType.class, new LowPriorityProvider()));
 
 // Merge registers with different priorities
 Register mergedRegister = new Register(highPriorityRegister, mediumPriorityRegister, lowPriorityRegister);
