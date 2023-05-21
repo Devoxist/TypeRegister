@@ -36,7 +36,7 @@ public class CombinedCustomRegisterTests {
         Register register1 = new Register(RegisterPriority.HIGHEST);
         register1.register(TestClass2.class, new TestClass2());
         Register register = new Register(register1);
-        register.register(TestClass.class, TestClass::new);
+        register.registerScoped(TestClass.class, TestClass::new);
 
         Assertions.assertFalse(register.hasProvider(TestClass2.class));
         Assertions.assertTrue(register.hasProvider(TestClass.class));
@@ -51,7 +51,7 @@ public class CombinedCustomRegisterTests {
         TestCls provider1 = new TestCls(1);
         register1.register(TestCls.class, provider1);
         Register register = new Register(register1);
-        register.register(TestCls.class, () -> new TestCls(2));
+        register.registerScoped(TestCls.class, () -> new TestCls(2));
 
         Assertions.assertEquals(2, ((Supplier<TestCls>) register.getProviderByType(TestCls.class)).get().i);
         Assertions.assertEquals(1, ((TestCls) register.getProviderByType(TestCls.class, true)).i);

@@ -24,7 +24,7 @@ package nl.devoxist.typeresolver.settings;
 
 import nl.devoxist.typeresolver.TypeRegister;
 import nl.devoxist.typeresolver.constructor.ConstructorResolving;
-import nl.devoxist.typeresolver.providers.TypeKeyProvider;
+import nl.devoxist.typeresolver.providers.IdentifierProvider;
 import nl.devoxist.typeresolver.register.Register;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +33,7 @@ import org.jetbrains.annotations.NotNull;
  * {@link ConstructionSettings} is an object that is holds the settings for the auto construction of a {@link Class}.
  *
  * @author Dev-Bjorn
- * @version 1.5.0
+ * @version 1.6.1
  * @since 1.5.0
  */
 public final class ConstructionSettings {
@@ -46,7 +46,7 @@ public final class ConstructionSettings {
             TypeRegister.getRegister(),
     };
     /**
-     * The identifier objects that the {@link TypeKeyProvider} or other key providers needs to use, to choose which
+     * The identifier objects that the {@link IdentifierProvider} or other key providers needs to use, to choose which
      * implementation it will use.
      *
      * @since 1.5.0
@@ -88,10 +88,10 @@ public final class ConstructionSettings {
     }
 
     /**
-     * Get the identifier objects that the {@link TypeKeyProvider} or other key providers needs to use, to choose which
-     * implementation it will use.
+     * Get the identifier objects that the {@link IdentifierProvider} or other key providers needs to use, to choose
+     * which implementation it will use.
      *
-     * @return The identifier objects that the {@link TypeKeyProvider} or other key providers needs to use
+     * @return The identifier objects that the {@link IdentifierProvider} or other key providers needs to use
      *
      * @since 1.5.0
      */
@@ -101,10 +101,10 @@ public final class ConstructionSettings {
     }
 
     /**
-     * Set the identifier objects that the {@link TypeKeyProvider} or other key providers needs to use, to choose which
-     * implementation it will use.
+     * Set the identifier objects that the {@link IdentifierProvider} or other key providers needs to use, to choose
+     * which implementation it will use.
      *
-     * @param identifiers The identifier objects that the {@link TypeKeyProvider} or other key providers needs to use
+     * @param identifiers The identifier objects that the {@link IdentifierProvider} or other key providers needs to use
      *
      * @since 1.5.0
      */

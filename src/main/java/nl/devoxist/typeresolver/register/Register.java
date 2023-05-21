@@ -28,10 +28,10 @@ import nl.devoxist.typeresolver.exception.ProviderException;
 import nl.devoxist.typeresolver.exception.RegisterException;
 import nl.devoxist.typeresolver.functions.SerializableConsumer;
 import nl.devoxist.typeresolver.functions.SerializableSupplier;
-import nl.devoxist.typeresolver.providers.TypeKeyProvider;
-import nl.devoxist.typeresolver.providers.TypeObjectProvider;
+import nl.devoxist.typeresolver.providers.IdentifierProvider;
+import nl.devoxist.typeresolver.providers.ObjectProvider;
+import nl.devoxist.typeresolver.providers.ScopedProvider;
 import nl.devoxist.typeresolver.providers.TypeProvider;
-import nl.devoxist.typeresolver.providers.TypeSupplierProvider;
 import nl.devoxist.typeresolver.providers.builders.TypeProviderBuilder;
 import nl.devoxist.typeresolver.settings.InitProviderSettings;
 import org.jetbrains.annotations.Contract;
@@ -50,7 +50,7 @@ import java.util.function.Supplier;
  * used to create custom {@link Register}s.
  *
  * @author Dev-Bjorn
- * @version 1.5.0
+ * @version 1.6.1
  * @since 1.3.0
  */
 public class Register implements Cloneable, Comparable<Register> {
@@ -182,7 +182,10 @@ public class Register implements Cloneable, Comparable<Register> {
      *
      * @throws RegisterException if the type is not assignable from the provider.
      * @since 1.3.0
+     * @deprecated Due to refactoring use {@link #registerScoped(Class, SerializableSupplier)}.
      */
+    @Deprecated(since = "1.6.1",
+                forRemoval = true)
     public <T, P extends T> boolean register(
             @NotNull Class<T> typeCls, @NotNull SerializableSupplier<P> provider
     ) {
@@ -192,10 +195,39 @@ public class Register implements Cloneable, Comparable<Register> {
             throw new RegisterException("The type is not assignable from the provider.");
         }
 
-        TypeProvider<T, ?> typeProvider = new TypeSupplierProvider<>(typeCls, provider);
+        TypeProvider<T, ?> typeProvider = new ScopedProvider<>(typeCls, provider);
 
         return this.register(typeProvider);
     }
+
+    /**
+     * Register a type with a {@link Supplier} provider.The registering of a {@link TypeProvider} causes a link to
+     * appear in this {@link Register}. The registration of an object can only be taken place in this {@link Register}.
+     *
+     * @param typeCls  The type which is going to be registered and linked to the provider.
+     * @param provider The {@link Supplier} provider of the type which is going to be registered and linked to the type.
+     * @param <T>      type of the type which is going to be registered.
+     * @param <P>      type of the {@link Supplier} provider which is going to be registered.
+     *
+     * @return if {@code true} the {@link TypeProvider} is registered.
+     *
+     * @throws RegisterException if the type is not assignable from the provider.
+     * @since 1.6.1
+     */
+    public <T, P extends T> boolean registerScoped(
+            @NotNull Class<T> typeCls, @NotNull SerializableSupplier<P> provider
+    ) {
+        Class<?> typeOfSupplier = provider.getSupplierClass();
+
+        if (!typeCls.isAssignableFrom(typeOfSupplier)) {
+            throw new RegisterException("The type is not assignable from the provider.");
+        }
+
+        TypeProvider<T, ?> typeProvider = new ScopedProvider<>(typeCls, provider);
+
+        return this.register(typeProvider);
+    }
+
 
     /**
      * Register a type with a provider. The registering of a {@link TypeProvider} causes a link to appear in this
@@ -219,7 +251,7 @@ public class Register implements Cloneable, Comparable<Register> {
             throw new RegisterException("The type is not assignable from the provider.");
         }
 
-        TypeProvider<T, ?> typeProvider = new TypeObjectProvider<>(typeCls, (T) provider);
+        TypeProvider<T, ?> typeProvider = new ObjectProvider<>(typeCls, (T) provider);
 
         return this.register(typeProvider);
     }
@@ -264,7 +296,7 @@ public class Register implements Cloneable, Comparable<Register> {
             @NotNull SerializableConsumer<X> builderConsumer
     ) {
         Class<X> consumerCls = builderConsumer.getConsumerCls();
-
+        
         if ((consumerCls.getModifiers() & Modifier.ABSTRACT) != 0) {
             throw new RegisterException(
                     "The consumer is an abstract type, which cannot be used in any from of registration.");
@@ -462,7 +494,7 @@ public class Register implements Cloneable, Comparable<Register> {
 
         TypeProvider<T, ?> typeProvider = this.findTypeProvider(typeCls, initProviderSettings.useAllRegisters());
 
-        if (typeProvider instanceof TypeKeyProvider<?, ?> typeKeyProvider) {
+        if (typeProvider instanceof IdentifierProvider<?, ?> typeKeyProvider) {
             Object[] identifiers = initProviderSettings.getIdentifiers();
             typeProvider = (TypeProvider<T, ?>) typeKeyProvider.applyIdentifiers(identifiers);
         }

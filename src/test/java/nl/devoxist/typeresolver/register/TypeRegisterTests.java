@@ -24,9 +24,10 @@ package nl.devoxist.typeresolver.register;
 
 import nl.devoxist.typeresolver.TypeRegister;
 import nl.devoxist.typeresolver.exception.RegisterException;
-import nl.devoxist.typeresolver.providers.TypeObjectProvider;
+import nl.devoxist.typeresolver.functions.SerializableConsumer;
+import nl.devoxist.typeresolver.providers.ObjectProvider;
+import nl.devoxist.typeresolver.providers.ScopedProvider;
 import nl.devoxist.typeresolver.providers.TypeProvider;
-import nl.devoxist.typeresolver.providers.TypeSupplierProvider;
 import nl.devoxist.typeresolver.providers.builders.IdentifiersBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfTypeIsRegistered() {
-        TypeRegister.register(TestClass.class, TestClass::new);
+        TypeRegister.registerScoped(TestClass.class, TestClass::new);
 
         Assertions.assertTrue(TypeRegister.hasProvider(TestClass.class));
 
@@ -56,7 +57,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfTypeIsRegistered3() {
-        TypeRegister.register(new TypeObjectProvider<>(TestClass.class, new TestClass()));
+        TypeRegister.register(new ObjectProvider<>(TestClass.class, new TestClass()));
 
         Assertions.assertTrue(TypeRegister.hasProvider(TestClass.class));
 
@@ -65,7 +66,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfTypeIsRegistered4() {
-        TypeRegister.register(new TypeSupplierProvider<>(TestClass.class, TestClass::new));
+        TypeRegister.register(new ScopedProvider<>(TestClass.class, TestClass::new));
 
         Assertions.assertTrue(TypeRegister.hasProvider(TestClass.class));
 
@@ -74,7 +75,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfTypeIsRegistered5() {
-        TypeRegister.register(TestClass2.class, TestClass2::new);
+        TypeRegister.registerScoped(TestClass2.class, TestClass2::new);
 
         Assertions.assertTrue(TypeRegister.hasProvider(TestClass2.class));
 
@@ -96,7 +97,7 @@ public class TypeRegisterTests {
     public void checkIfTypeIsRegistered7() {
         TypeRegister.register(
                 Exporter.class,
-                (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
+                (SerializableConsumer<IdentifiersBuilder<Exporter, Class<? extends Exporter>>>) (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
                         .addIdentifier(CarOneExporter.class, new CarOneExporter())
                         .addIdentifier(CarTwoExporter.class, new CarTwoExporter())
         );
@@ -108,7 +109,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfTypeIsNotRegistered() {
-        TypeRegister.register(TestClass.class, TestClass::new);
+        TypeRegister.registerScoped(TestClass.class, TestClass::new);
 
         Assertions.assertFalse(TypeRegister.hasProvider(TestClass2.class));
 
@@ -126,7 +127,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfTypeIsNotRegistered3() {
-        TypeRegister.register(new TypeObjectProvider<>(TestClass.class, new TestClass()));
+        TypeRegister.register(new ObjectProvider<>(TestClass.class, new TestClass()));
 
         Assertions.assertFalse(TypeRegister.hasProvider(TestClass2.class));
 
@@ -135,7 +136,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfTypeIsNotRegistered4() {
-        TypeRegister.register(new TypeSupplierProvider<>(TestClass.class, TestClass::new));
+        TypeRegister.register(new ScopedProvider<>(TestClass.class, TestClass::new));
 
         Assertions.assertFalse(TypeRegister.hasProvider(TestClass2.class));
 
@@ -144,7 +145,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfTypeIsNotRegistered5() {
-        TypeRegister.register(TestClass2.class, TestClass2::new);
+        TypeRegister.registerScoped(TestClass2.class, TestClass2::new);
 
         Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
 
@@ -166,7 +167,7 @@ public class TypeRegisterTests {
     public void checkIfTypeIsNotRegistered7() {
         TypeRegister.register(
                 TestClass.class,
-                (IdentifiersBuilder<TestClass, Class<TestClass>> settings) -> settings
+                (SerializableConsumer<IdentifiersBuilder<TestClass, Class<TestClass>>>) (IdentifiersBuilder<TestClass, Class<TestClass>> settings) -> settings
                         .addIdentifier(TestClass.class, new TestClass())
         );
 
@@ -178,7 +179,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfGottenTypeSameType1() {
-        TypeRegister.register(TestClass.class, TestClass::new);
+        TypeRegister.registerScoped(TestClass.class, TestClass::new);
 
         Assertions.assertEquals(
                 TestClass.class,
@@ -208,7 +209,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfGottenTypeSameType4() {
-        TypeRegister.register(TestClass.class, TestClass::new);
+        TypeRegister.registerScoped(TestClass.class, TestClass::new);
 
         Assertions.assertEquals(TestClass.class, TypeRegister.getInitProvider(TestClass.class).getClass());
 
@@ -232,7 +233,7 @@ public class TypeRegisterTests {
         CarTwoExporter carTwoExporter = new CarTwoExporter();
         TypeRegister.register(
                 Exporter.class,
-                (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
+                (SerializableConsumer<IdentifiersBuilder<Exporter, Class<? extends Exporter>>>) (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
                         .addIdentifier(CarOneExporter.class, carOneExporter)
                         .addIdentifier(CarTwoExporter.class, carTwoExporter)
         );
@@ -258,7 +259,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfUnregisterType() {
-        TypeRegister.register(TestClass.class, TestClass::new);
+        TypeRegister.registerScoped(TestClass.class, TestClass::new);
         TypeRegister.unregister(TestClass.class);
 
         Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
@@ -274,7 +275,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfUnregisterType3() {
-        TypeRegister.register(new TypeObjectProvider<>(TestClass.class, new TestClass()));
+        TypeRegister.register(new ObjectProvider<>(TestClass.class, new TestClass()));
         TypeRegister.unregister(TestClass.class);
 
         Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
@@ -282,7 +283,7 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfUnregisterType4() {
-        TypeRegister.register(new TypeSupplierProvider<>(TestClass.class, TestClass::new));
+        TypeRegister.register(new ScopedProvider<>(TestClass.class, TestClass::new));
         TypeRegister.unregister(TestClass.class);
 
         Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
@@ -290,8 +291,8 @@ public class TypeRegisterTests {
 
     @Test
     public void checkIfUnregisterType5() {
-        TypeRegister.register(TestClass.class, TestClass::new);
-        TypeRegister.unregister(new TypeSupplierProvider<>(TestClass.class, TestClass::new));
+        TypeRegister.registerScoped(TestClass.class, TestClass::new);
+        TypeRegister.unregister(new ScopedProvider<>(TestClass.class, TestClass::new));
 
         Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
     }
@@ -299,23 +300,23 @@ public class TypeRegisterTests {
     @Test
     public void checkIfUnregisterType6() {
         TypeRegister.register(TestClass.class, new TestClass());
-        TypeRegister.unregister(new TypeObjectProvider<>(TestClass.class, new TestClass()));
+        TypeRegister.unregister(new ObjectProvider<>(TestClass.class, new TestClass()));
 
         Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
     }
 
     @Test
     public void checkIfUnregisterType7() {
-        TypeRegister.register(new TypeObjectProvider<>(TestClass.class, new TestClass()));
-        TypeRegister.unregister(new TypeObjectProvider<>(TestClass.class, new TestClass()));
+        TypeRegister.register(new ObjectProvider<>(TestClass.class, new TestClass()));
+        TypeRegister.unregister(new ObjectProvider<>(TestClass.class, new TestClass()));
 
         Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
     }
 
     @Test
     public void checkIfUnregisterType8() {
-        TypeRegister.register(new TypeSupplierProvider<>(TestClass.class, TestClass::new));
-        TypeRegister.unregister(new TypeSupplierProvider<>(TestClass.class, TestClass::new));
+        TypeRegister.register(new ScopedProvider<>(TestClass.class, TestClass::new));
+        TypeRegister.unregister(new ScopedProvider<>(TestClass.class, TestClass::new));
 
         Assertions.assertFalse(TypeRegister.hasProvider(TestClass.class));
     }

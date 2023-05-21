@@ -25,7 +25,7 @@ package nl.devoxist.typeresolver.settings;
 import nl.devoxist.typeresolver.constructor.ConstructorResolver;
 import nl.devoxist.typeresolver.constructor.ConstructorResolving;
 import nl.devoxist.typeresolver.exception.ConstructorException;
-import nl.devoxist.typeresolver.providers.TypeKeyProvider;
+import nl.devoxist.typeresolver.providers.IdentifierProvider;
 import nl.devoxist.typeresolver.register.Register;
 
 import java.lang.reflect.InvocationTargetException;
@@ -37,7 +37,7 @@ import java.lang.reflect.InvocationTargetException;
  * @param <T> The type that represents the constructed class.
  *
  * @author Dev-Bjorn
- * @version 1.5.0
+ * @version 1.6.1
  * @since 1.5.0
  */
 public class ConstructionSettingsBuilder<T> {
@@ -101,10 +101,10 @@ public class ConstructionSettingsBuilder<T> {
 
 
     /**
-     * Set the identifier objects that the {@link TypeKeyProvider} or other key providers needs to use, to choose which
-     * implementation it will use.
+     * Set the identifier objects that the {@link IdentifierProvider} or other key providers needs to use, to choose
+     * which implementation it will use.
      *
-     * @param identifiers The identifier objects that the {@link TypeKeyProvider} or other key providers needs to use
+     * @param identifiers The identifier objects that the {@link IdentifierProvider} or other key providers needs to use
      *
      * @return The builder of the {@link ConstructionSettings} to chain-edit the {@link ConstructionSettings}, when the
      * options are set call the {@link ConstructionSettingsBuilder#initClass()} to initialize the class.

@@ -22,21 +22,18 @@
 
 package nl.devoxist.typeresolver.typeproviders;
 
-import nl.devoxist.typeresolver.providers.TypeObjectProvider;
-import nl.devoxist.typeresolver.providers.TypeProvider;
+import nl.devoxist.typeresolver.providers.ScopedProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class TypeObjectProviderTest {
+public class ScopedProviderTest {
 
     @Test
     public void constructionTest() {
-        TestClass testClass = new TestClass();
-        TypeProvider<TestClass, TestClass> provider = new TypeObjectProvider<>(TestClass.class, testClass);
+        ScopedProvider<TestClass, TestClass> provider = new ScopedProvider<>(TestClass.class, TestClass::new);
 
-        Assertions.assertEquals(TestClass.class, provider.getType());
-        Assertions.assertEquals(testClass, provider.getProvider());
-        Assertions.assertEquals(testClass, provider.getInitProvider());
+        Assertions.assertNotNull(provider.getInitProvider());
+        Assertions.assertTrue(provider.getInitProvider() instanceof TestClass);
     }
 
     public static class TestClass {

@@ -24,10 +24,10 @@ package nl.devoxist.typeresolver.providers.builders;
 
 import nl.devoxist.typeresolver.exception.RegisterException;
 import nl.devoxist.typeresolver.functions.SerializableSupplier;
-import nl.devoxist.typeresolver.providers.TypeKeyProvider;
-import nl.devoxist.typeresolver.providers.TypeObjectProvider;
+import nl.devoxist.typeresolver.providers.IdentifierProvider;
+import nl.devoxist.typeresolver.providers.ObjectProvider;
+import nl.devoxist.typeresolver.providers.ScopedProvider;
 import nl.devoxist.typeresolver.providers.TypeProvider;
-import nl.devoxist.typeresolver.providers.TypeSupplierProvider;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,13 +37,13 @@ import java.util.function.Supplier;
 
 /**
  * {@link IdentifiersBuilder} is the subclass of {@link TypeProviderBuilder} which will chain-edit the a
- * {@link TypeKeyProvider}. Eventually it will build the {@link TypeKeyProvider} with the values in this object.
+ * {@link IdentifierProvider}. Eventually it will build the {@link IdentifierProvider} with the values in this object.
  *
  * @param <T> The type that is representing the type of the {@link TypeProvider}.
  * @param <I> The type that is representing the type of the identifier.
  *
  * @author Dev-Bjorn
- * @version 1.5.0
+ * @version 1.6.1
  * @since 1.5.0
  */
 public final class IdentifiersBuilder<T, I> extends TypeProviderBuilder<T> {
@@ -55,34 +55,62 @@ public final class IdentifiersBuilder<T, I> extends TypeProviderBuilder<T> {
     private final Map<I, TypeProvider<T, ?>> identifiersMap = new HashMap<>();
 
     /**
-     * Add an identifier with a value to the {@link TypeKeyProvider#getIdentifiersMap()}.
+     * Add an identifier with a value to the {@link IdentifierProvider#getIdentifiersMap()}.
      *
      * @param identifier The identifier which will be linked to the value.
      * @param value      The value of the identifier. This value will be returned when the given identifier is applied
-     *                   in {@link TypeKeyProvider}.
+     *                   in {@link IdentifierProvider}.
      *
-     * @return The builder of the {@link TypeKeyProvider} to chain-edit the {@link TypeKeyProvider}, when the
+     * @return The builder of the {@link IdentifierProvider} to chain-edit the {@link IdentifierProvider}, when the
      * options are set call the {@link IdentifiersBuilder#buildProvider(Class)} to get the {@link TypeProvider}.
+     *
+     * @since 1.5.0
      */
     @Contract("_, _ -> this")
+    @SuppressWarnings("unchecked")
     public IdentifiersBuilder<T, I> addIdentifier(I identifier, T value) {
-        this.identifiersMap.put(identifier, new TypeObjectProvider<>((Class<T>) value.getClass(), value));
+        this.identifiersMap.put(identifier, new ObjectProvider<>((Class<T>) value.getClass(), value));
         return this;
     }
 
     /**
-     * Add an identifier with a value to the {@link TypeKeyProvider#getIdentifiersMap()}.
+     * Add an identifier with a value to the {@link IdentifierProvider#getIdentifiersMap()}.
      *
      * @param identifier The identifier which will be linked to the value.
-     * @param value      The supplier value of the identifier. Each time the {@link TypeKeyProvider#getInitProvider()}
+     * @param value      The supplier value of the identifier. Each time the
+     *                   {@link IdentifierProvider#getInitProvider()}
      *                   and the given identifier is applied, it will return the output of {@link Supplier#get()}.
      *
-     * @return The builder of the {@link TypeKeyProvider} to chain-edit the {@link TypeKeyProvider}, when the
+     * @return The builder of the {@link IdentifierProvider} to chain-edit the {@link IdentifierProvider}, when the
      * options are set call the {@link IdentifiersBuilder#buildProvider(Class)} to get the {@link TypeProvider}.
+     *
+     * @since 1.6.0
+     * @deprecated Due to refactoring use {@link #addScopedIdentifier(Object, SerializableSupplier)}
      */
     @Contract("_, _ -> this")
+    @Deprecated(since = "1.6.1",
+                forRemoval = true)
     public IdentifiersBuilder<T, I> addSupplierIdentifier(I identifier, SerializableSupplier<T> value) {
-        this.identifiersMap.put(identifier, new TypeSupplierProvider<>(value.getSupplierClass(), value));
+        this.identifiersMap.put(identifier, new ScopedProvider<>(value.getSupplierClass(), value));
+        return this;
+    }
+
+    /**
+     * Add an identifier with a value to the {@link IdentifierProvider#getIdentifiersMap()}.
+     *
+     * @param identifier The identifier which will be linked to the value.
+     * @param value      The supplier value of the identifier. Each time the
+     *                   {@link IdentifierProvider#getInitProvider()}
+     *                   and the given identifier is applied, it will return the output of {@link Supplier#get()}.
+     *
+     * @return The builder of the {@link IdentifierProvider} to chain-edit the {@link IdentifierProvider}, when the
+     * options are set call the {@link IdentifiersBuilder#buildProvider(Class)} to get the {@link TypeProvider}.
+     *
+     * @since 1.6.1
+     */
+    @Contract("_, _ -> this")
+    public IdentifiersBuilder<T, I> addScopedIdentifier(I identifier, SerializableSupplier<T> value) {
+        this.identifiersMap.put(identifier, new ScopedProvider<>(value.getSupplierClass(), value));
         return this;
     }
 
@@ -97,11 +125,11 @@ public final class IdentifiersBuilder<T, I> extends TypeProviderBuilder<T> {
      */
     @Contract(pure = true)
     @Override
-    public @NotNull TypeKeyProvider<T, I> buildProvider(@NotNull Class<T> typeCls) {
+    public @NotNull IdentifierProvider<T, I> buildProvider(@NotNull Class<T> typeCls) {
         if (identifiersMap.isEmpty()) {
             throw new RegisterException(
                     "There are no identifiers registered, and thus no provider registered. So first use the #addIdentifier(I,T), to add some identifiers");
         }
-        return new TypeKeyProvider<>(typeCls, identifiersMap);
+        return new IdentifierProvider<>(typeCls, identifiersMap);
     }
 }

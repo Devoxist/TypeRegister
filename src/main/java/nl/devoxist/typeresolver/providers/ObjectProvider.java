@@ -27,19 +27,16 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Supplier;
 
 /**
- * {@link TypeSupplierProvider} is a subclass of {@link TypeProvider} and it links a type with an {@link Object}.
+ * {@link ObjectProvider} is a subclass of {@link TypeProvider} and it links a type with an {@link Object}.
  *
  * @param <T> The type of the type.
  * @param <P> The type of the {@link Supplier} provider.
  *
  * @author Dev-Bjorn
- * @version 1.5.0
+ * @version 1.6.1
  * @since 1.1.0
- * @deprecated Use {@link ObjectProvider}, this is caused by refactoring.
  */
-@Deprecated(since = "1.6.1",
-            forRemoval = true)
-public final class TypeObjectProvider<T, P extends T> extends TypeProvider<T, P> {
+public final class ObjectProvider<T, P extends T> extends TypeProvider<T, P> {
 
     /**
      * Construct a type provider object. This object holds the static object and the type.
@@ -49,10 +46,10 @@ public final class TypeObjectProvider<T, P extends T> extends TypeProvider<T, P>
      *
      * @since 1.1.0
      */
-    public TypeObjectProvider(@NotNull Class<T> typeCls, @NotNull P provider) {
+    public ObjectProvider(@NotNull Class<T> typeCls, @NotNull P provider) {
         super(typeCls, provider);
     }
-
+    
     /**
      * Get the initiated object of the provider. For example a {@link Supplier} returns the {@link Supplier#get()}.
      *

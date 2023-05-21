@@ -23,7 +23,7 @@
 package nl.devoxist.typeresolver.typeproviders.builder;
 
 import nl.devoxist.typeresolver.exception.RegisterException;
-import nl.devoxist.typeresolver.providers.TypeKeyProvider;
+import nl.devoxist.typeresolver.providers.IdentifierProvider;
 import nl.devoxist.typeresolver.providers.builders.IdentifiersBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ public class IdentifiersBuilderTest {
         IdentifiersBuilder<Exporter, Class<? extends Exporter>> identifiersBuilder = new IdentifiersBuilder<>();
         identifiersBuilder.addIdentifier(CarOneExporter.class, new CarOneExporter());
 
-        Assertions.assertTrue(identifiersBuilder.buildProvider(Exporter.class) instanceof TypeKeyProvider<Exporter, Class<? extends Exporter>>);
+        Assertions.assertTrue(identifiersBuilder.buildProvider(Exporter.class) instanceof IdentifierProvider<Exporter, Class<? extends Exporter>>);
     }
 
     @Test
@@ -50,7 +50,7 @@ public class IdentifiersBuilderTest {
         IdentifiersBuilder<Exporter, Class<? extends Exporter>> identifiersBuilder = new IdentifiersBuilder<>();
         identifiersBuilder.addIdentifier(CarTwoExporter.class, new CarTwoExporter());
 
-        TypeKeyProvider<Exporter, Class<? extends Exporter>> typeKeyProvider =
+        IdentifierProvider<Exporter, Class<? extends Exporter>> typeKeyProvider =
                 identifiersBuilder.buildProvider(Exporter.class);
 
         Assertions.assertEquals(1, typeKeyProvider.getIdentifiersMap().size());
@@ -63,7 +63,7 @@ public class IdentifiersBuilderTest {
         identifiersBuilder.addIdentifier(CarOneExporter.class, new CarOneExporter());
         identifiersBuilder.addIdentifier(CarTwoExporter.class, new CarTwoExporter());
 
-        TypeKeyProvider<Exporter, Class<? extends Exporter>> typeKeyProvider =
+        IdentifierProvider<Exporter, Class<? extends Exporter>> typeKeyProvider =
                 identifiersBuilder.buildProvider(Exporter.class);
 
         Assertions.assertEquals(2, typeKeyProvider.getIdentifiersMap().size());

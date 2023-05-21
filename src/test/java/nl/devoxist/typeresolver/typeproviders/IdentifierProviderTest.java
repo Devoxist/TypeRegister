@@ -23,12 +23,12 @@
 package nl.devoxist.typeresolver.typeproviders;
 
 import nl.devoxist.typeresolver.exception.ProviderException;
-import nl.devoxist.typeresolver.providers.TypeKeyProvider;
+import nl.devoxist.typeresolver.providers.IdentifierProvider;
 import nl.devoxist.typeresolver.providers.builders.IdentifiersBuilder;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class TypeKeyProviderTest {
+public class IdentifierProviderTest {
 
     @Test
     public void getInitProviderTest() {
@@ -38,7 +38,7 @@ public class TypeKeyProviderTest {
         identifiersBuilder.addIdentifier(CarOneExporter.class, carOneExporter);
         identifiersBuilder.addIdentifier(CarTwoExporter.class, carTwoExporter);
 
-        TypeKeyProvider<Exporter, Class<? extends Exporter>> typeKeyProvider =
+        IdentifierProvider<Exporter, Class<? extends Exporter>> typeKeyProvider =
                 identifiersBuilder.buildProvider(Exporter.class);
 
         typeKeyProvider = typeKeyProvider.applyIdentifiers(CarOneExporter.class);
@@ -58,7 +58,7 @@ public class TypeKeyProviderTest {
         identifiersBuilder.addIdentifier(Exporters.CAR_ONE, carOneExporter);
         identifiersBuilder.addIdentifier(Exporters.CAR_TWO, carTwoExporter);
 
-        TypeKeyProvider<Exporter, Exporters> typeKeyProvider = identifiersBuilder.buildProvider(Exporter.class);
+        IdentifierProvider<Exporter, Exporters> typeKeyProvider = identifiersBuilder.buildProvider(Exporter.class);
 
         typeKeyProvider = typeKeyProvider.applyIdentifiers(Exporters.CAR_ONE);
 
@@ -72,10 +72,11 @@ public class TypeKeyProviderTest {
     @Test
     public void getInitProviderTest3() {
         IdentifiersBuilder<Exporter, Exporters> identifiersBuilder = new IdentifiersBuilder<>();
-        identifiersBuilder.addSupplierIdentifier(Exporters.CAR_ONE, CarOneExporter::new);
-        identifiersBuilder.addSupplierIdentifier(Exporters.CAR_TWO, CarTwoExporter::new);
+        identifiersBuilder
+                .addScopedIdentifier(Exporters.CAR_ONE, CarOneExporter::new)
+                .addScopedIdentifier(Exporters.CAR_TWO, CarTwoExporter::new);
 
-        TypeKeyProvider<Exporter, Exporters> typeKeyProvider = identifiersBuilder.buildProvider(Exporter.class);
+        IdentifierProvider<Exporter, Exporters> typeKeyProvider = identifiersBuilder.buildProvider(Exporter.class);
 
         typeKeyProvider = typeKeyProvider.applyIdentifiers(Exporters.CAR_ONE);
 
@@ -91,11 +92,11 @@ public class TypeKeyProviderTest {
     @Test
     public void getInitProviderTest4() {
         IdentifiersBuilder<Exporter, Exporters> identifiersBuilder = new IdentifiersBuilder<>();
-        identifiersBuilder.addSupplierIdentifier(Exporters.CAR_ONE, CarOneExporter::new);
+        identifiersBuilder.addScopedIdentifier(Exporters.CAR_ONE, CarOneExporter::new);
         CarTwoExporter carTwoExporter = new CarTwoExporter();
         identifiersBuilder.addIdentifier(Exporters.CAR_TWO, carTwoExporter);
 
-        TypeKeyProvider<Exporter, Exporters> typeKeyProvider = identifiersBuilder.buildProvider(Exporter.class);
+        IdentifierProvider<Exporter, Exporters> typeKeyProvider = identifiersBuilder.buildProvider(Exporter.class);
 
         typeKeyProvider = typeKeyProvider.applyIdentifiers(Exporters.CAR_ONE);
 
@@ -115,7 +116,7 @@ public class TypeKeyProviderTest {
         identifiersBuilder.addIdentifier(CarOneExporter.class, new CarOneExporter());
         identifiersBuilder.addIdentifier(CarTwoExporter.class, new CarTwoExporter());
 
-        TypeKeyProvider<Exporter, Class<? extends Exporter>> typeKeyProvider =
+        IdentifierProvider<Exporter, Class<? extends Exporter>> typeKeyProvider =
                 identifiersBuilder.buildProvider(Exporter.class);
 
         Assertions.assertThrows(ProviderException.class, typeKeyProvider::getInitProvider);
@@ -127,7 +128,7 @@ public class TypeKeyProviderTest {
         CarOneExporter carOneExporter = new CarOneExporter();
         identifiersBuilder.addIdentifier(CarOneExporter.class, carOneExporter);
 
-        TypeKeyProvider<Exporter, Class<? extends Exporter>> typeKeyProvider =
+        IdentifierProvider<Exporter, Class<? extends Exporter>> typeKeyProvider =
                 identifiersBuilder.buildProvider(Exporter.class);
 
         typeKeyProvider = typeKeyProvider.applyIdentifiers(CarOneExporter.class);

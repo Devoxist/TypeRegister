@@ -38,13 +38,18 @@ public class IdentifierExample {
                         .addIdentifier(Cars.ONE, new CarOne())
                         .addIdentifier(Cars.TWO, new CarTwo())
         );
-
+        
+        // AutoConstructing using identifier
         CarExporter carExporter = ConstructorResolver.constructClass(CarExporter.class)
                 .setNeedAnnotation(false)
                 .setIdentifiers(Cars.ONE)
                 .setRegisters(register)
                 .initClass();
 
+        Car car = register.getInitProvider(
+                Car.class,
+                (initProviderSettings) -> initProviderSettings.setIdentifiers(Cars.ONE)
+        );
         // DO YOUR STUFF WITH CAR EXPORTER
     }
 

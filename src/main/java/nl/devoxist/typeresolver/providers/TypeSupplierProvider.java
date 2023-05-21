@@ -35,7 +35,10 @@ import java.util.function.Supplier;
  * @author Dev-Bjorn
  * @version 1.5.0
  * @since 1.1.0
+ * @deprecated Use {@link ScopedProvider}, this is caused by refactoring.
  */
+@Deprecated(since = "1.6.1",
+            forRemoval = true)
 public final class TypeSupplierProvider<T, P extends T> extends TypeProvider<T, Supplier<P>> {
 
     /**

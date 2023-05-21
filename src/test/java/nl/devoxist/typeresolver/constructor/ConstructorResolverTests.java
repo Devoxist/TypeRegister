@@ -23,6 +23,7 @@
 package nl.devoxist.typeresolver.constructor;
 
 import nl.devoxist.typeresolver.TypeRegister;
+import nl.devoxist.typeresolver.functions.SerializableConsumer;
 import nl.devoxist.typeresolver.providers.TypeProvider;
 import nl.devoxist.typeresolver.providers.builders.IdentifiersBuilder;
 import nl.devoxist.typeresolver.register.Register;
@@ -40,7 +41,7 @@ public class ConstructorResolverTests {
     @Test
     public void checkIfConstructionIsInitialized()
             throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        TypeRegister.register(TestClass.class, () -> new TestClass(1));
+        TypeRegister.registerScoped(TestClass.class, () -> new TestClass(1));
 
         Assertions.assertNotNull(ConstructorResolver.initClass(ConstructionClass.class).testClass());
 
@@ -50,7 +51,7 @@ public class ConstructorResolverTests {
     @Test
     public void checkIfConstructionIsCorrectInitialized()
             throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        TypeRegister.register(TestClass.class, () -> new TestClass(2));
+        TypeRegister.registerScoped(TestClass.class, () -> new TestClass(2));
 
         Assertions.assertEquals(
                 TypeRegister.getInitProvider(TestClass.class).hashCode(),
@@ -204,7 +205,7 @@ public class ConstructorResolverTests {
         CarTwoExporter carTwoExporter = new CarTwoExporter();
         TypeRegister.register(
                 Exporter.class,
-                (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
+                (SerializableConsumer<IdentifiersBuilder<Exporter, Class<? extends Exporter>>>) (IdentifiersBuilder<Exporter, Class<? extends Exporter>> settings) -> settings
                         .addIdentifier(CarOneExporter.class, carOneExporter)
                         .addIdentifier(CarTwoExporter.class, carTwoExporter)
         );

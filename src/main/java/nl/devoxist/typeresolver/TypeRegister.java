@@ -92,12 +92,36 @@ public final class TypeRegister {
      *
      * @throws RegisterException if the type is not assignable from the provider.
      * @since 1.0.0
+     * @deprecated Due to refactoring use {@link #registerScoped(Class, SerializableSupplier)}.
      */
+    @Deprecated(since = "1.6.1",
+                forRemoval = true)
     public static <T, P extends T> boolean register(
             @NotNull Class<T> typeCls,
             @NotNull SerializableSupplier<P> provider
     ) {
         return REGISTER.register(typeCls, provider);
+    }
+
+    /**
+     * Register a type with a {@link Supplier} provider. The registering of a {@link TypeProvider} causes a link to
+     * appear in the {@link TypeRegister}.
+     *
+     * @param typeCls  The type which is going to be registered and linked to the provider.
+     * @param provider The {@link Supplier} provider of the type which is going to be registered and linked to the type.
+     * @param <T>      type of the type which is going to be registered.
+     * @param <P>      type of the {@link Supplier} provider which is going to be registered.
+     *
+     * @return if {@code true} the {@link TypeProvider} is registered.
+     *
+     * @throws RegisterException if the type is not assignable from the provider.
+     * @since 1.0.0
+     */
+    public static <T, P extends T> boolean registerScoped(
+            @NotNull Class<T> typeCls,
+            @NotNull SerializableSupplier<P> provider
+    ) {
+        return REGISTER.registerScoped(typeCls, provider);
     }
 
     /**
@@ -114,7 +138,7 @@ public final class TypeRegister {
      * @throws RegisterException if the type is not assignable from the provider.
      * @since 1.1.0
      */
-    public static <T, P> boolean register(@NotNull Class<T> typeCls, @NotNull P provider) {
+    public static <T, P extends T> boolean register(@NotNull Class<T> typeCls, @NotNull P provider) {
         return REGISTER.register(typeCls, provider);
     }
 

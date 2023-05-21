@@ -20,27 +20,45 @@
  * SOFTWARE.
  */
 
-package nl.devoxist.typeresolver.typeproviders;
+package nl.devoxist.typeresolver.providers;
 
-import nl.devoxist.typeresolver.providers.TypeSupplierProvider;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
 
-public class TypeSupplierProviderTest {
+/**
+ * {@link ScopedProvider} is a subclass of {@link TypeProvider} and it links a type with a {@link Supplier}.
+ *
+ * @param <T> The type of the type.
+ * @param <P> The type of the {@link Supplier} provider.
+ *
+ * @author Dev-Bjorn
+ * @version 1.6.1
+ * @since 1.1.0
+ */
+public final class ScopedProvider<T, P extends T> extends TypeProvider<T, Supplier<P>> {
 
-    @Test
-    public void constructionTest() {
-        Supplier<TestClass> testClassSupplier = TestClass::new;
-        TypeSupplierProvider<TestClass, TestClass> provider =
-                new TypeSupplierProvider<>(TestClass.class, testClassSupplier);
-
-        Assertions.assertNotNull(provider.getInitProvider());
-        Assertions.assertTrue(provider.getInitProvider() instanceof TestClass);
+    /**
+     * Construct a {@link TypeProvider} object. This object holds the {@link Supplier} object and the type.
+     *
+     * @param typeCls  The class or interface that is representing the type of this {@link TypeProvider}.
+     * @param provider the provider class
+     *
+     * @since 1.1.0
+     */
+    public ScopedProvider(@NotNull Class<T> typeCls, @NotNull Supplier<P> provider) {
+        super(typeCls, provider);
     }
 
-    public static class TestClass {
-
+    /**
+     * Get the initiated object of the provider. For example a {@link Supplier} returns the {@link Supplier#get()}.
+     *
+     * @return The initiated object of the provider.
+     *
+     * @since 1.1.0
+     */
+    @Override
+    public T getInitProvider() {
+        return getProvider().get();
     }
 }

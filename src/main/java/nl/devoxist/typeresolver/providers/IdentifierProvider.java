@@ -32,7 +32,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * {@link TypeKeyProvider} is a subclass of {@link TypeProvider}, which links a type with a {@link Collection}. It uses
+ * {@link IdentifierProvider} is a subclass of {@link TypeProvider}, which links a type with a {@link Collection}. It
+ * uses
  * an identifier to retrieve the implementation in the collection.
  *
  * @param <T> type that represents the type of the {@link TypeProvider}.
@@ -41,11 +42,8 @@ import java.util.Map;
  * @author Dev-Bjorn
  * @version 1.6.1
  * @since 1.5.0
- * @deprecated Use {@link IdentifierProvider}, this is caused by refactoring.
  */
-@Deprecated(since = "1.6.1",
-            forRemoval = true)
-public final class TypeKeyProvider<T, I> extends TypeProvider<T, Collection<?>> implements Cloneable {
+public final class IdentifierProvider<T, I> extends TypeProvider<T, Collection<?>> implements Cloneable {
     /**
      * The {@link Map} that holds the identifiers with their implementations of the type.
      *
@@ -69,7 +67,7 @@ public final class TypeKeyProvider<T, I> extends TypeProvider<T, Collection<?>> 
      * @throws ProviderException If there are no identifiers registered.
      * @since 1.5.0
      */
-    public TypeKeyProvider(@NotNull Class<T> typeCls, @NotNull Map<I, TypeProvider<T, ?>> identifiersMap) {
+    public IdentifierProvider(@NotNull Class<T> typeCls, @NotNull Map<I, TypeProvider<T, ?>> identifiersMap) {
         super(typeCls, identifiersMap.values());
 
         if (identifiersMap.size() == 0) {
@@ -156,8 +154,8 @@ public final class TypeKeyProvider<T, I> extends TypeProvider<T, Collection<?>> 
      *
      * @since 1.5.0
      */
-    public @NotNull TypeKeyProvider<T, I> applyIdentifiers(@NotNull Object... identifier) {
-        TypeKeyProvider<T, I> clonedTypeProvider = this.clone();
+    public @NotNull IdentifierProvider<T, I> applyIdentifiers(@NotNull Object... identifier) {
+        IdentifierProvider<T, I> clonedTypeProvider = this.clone();
         clonedTypeProvider.identifiers = identifier;
         return clonedTypeProvider;
     }
@@ -220,14 +218,14 @@ public final class TypeKeyProvider<T, I> extends TypeProvider<T, Collection<?>> 
      * {@code Cloneable}, so calling the {@code clone} method on an object
      * whose class is {@code Object} will result in throwing an
      * exception at run time.
-     * @see java.lang.Cloneable
+     * @see Cloneable
      * @since 1.5.0
      */
     @Override
     @SuppressWarnings("unchecked")
-    public TypeKeyProvider<T, I> clone() {
+    public IdentifierProvider<T, I> clone() {
         try {
-            return (TypeKeyProvider<T, I>) super.clone();
+            return (IdentifierProvider<T, I>) super.clone();
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }
